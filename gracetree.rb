@@ -6,7 +6,77 @@ require 'optparse'
 require 'pp'
 require 'fileutils'
 require 'benchmark'
-require File.dirname(__FILE__)+"/libutils.rb"
+
+# https://gist.github.com/ChuckJHardySnippets/2000623
+class String
+  def to_b
+    return true   if self == true   || self =~ (/(true|t|yes|y|1)$/i)
+    return false  if self == false  || self.blank? || self =~ (/(false|f|no|n|0)$/i)
+    raise ArgumentError.new("invalid value for Boolean: \"#{self}\"")
+  end
+end
+
+# https://stackoverflow.com/questions/18358717/ruby-elegantly-convert-variable-to-an-array-if-not-an-array-already
+class  Object;    def  ensure_array;  [self]  end  end
+class  Array;     def  ensure_array;  to_a    end  end
+class  NilClass;  def  ensure_array;  to_a    end  end
+
+class LibUtils
+
+  def LibUtils.calling_methods(debugdeep=false)
+    LibUtils.peek(caller.join("\n"),'caller.join("\n")',debugdeep)
+    out=Array.new
+    caller[1..-1].each do |c|
+      c1=c.to_s.slice(/`.*'/)
+      out.push(c1[1...-1].sub("block in ","")) unless c1.nil?
+    end
+    LibUtils.peek(out.join("\n"),'out.join("\n")',debugdeep)
+    return out
+  end
+
+  @TABLEN=50
+  @NAMLEN=20
+  @VARLEN=24
+
+  def LibUtils.peek(var,varname,disp=true,args=Hash.new)
+    return unless disp
+    args={
+      :show_caller    => true,
+      :return_string  => false,
+    }.merge(args)
+    if args[:show_caller]
+      caller_str=caller[0].split("/")[-1]
+    else
+      caller_str=nil
+    end
+    out =              caller_str.ljust(@TABLEN)+" : "
+    out+=            varname.to_s.ljust(@NAMLEN)+" : "
+    case var
+    when Hash
+      out+=var.pretty_inspect.chomp.ljust(@VARLEN)+" : "
+    when Array
+      out+=var.join(',').ljust(@VARLEN)+" : "
+    else
+      if var.to_s.nil?
+        out+="to_s returned nil!".ljust(@VARLEN)+" : "
+      else
+        out+=var.to_s.ljust(@VARLEN)+" : "
+      end
+    end
+    out+=var.class.to_s
+    if args[:return_string]
+      return out
+    else
+      puts out
+    end
+  end
+
+  def LibUtils.natural_sort(x)
+    return x.ensure_array.sort_by {|e| e.split(/(\d+)/).map {|a| a =~ /\d+/ ? a.to_i : a }}
+  end
+
+
+end
 
 class GraceTree
   attr_accessor :parfile, :pars, :pars_input, :deppars, :rsdb, :adb
@@ -78,11 +148,11 @@ class GraceTree
     GraceTree.instance_methods(false).sort.grep(/^x/).map{|i| i.sub(/^x/,'')}
   end
 
-  def options_default_str(option)
+  def options_default_str(option,extra='')
     if @pars[option].nil?
-      "(no default value set; add '#{option}: <default value>' to the parameter file)"
+      "(no default value set; add '#{option}: default_value' to the parameter file)"
     else
-      "(default is <#{@pars[option]}>)"
+      "(default is '#{@pars[option]}"+extra+"')"
     end
   end
 
@@ -95,6 +165,8 @@ class GraceTree
     #load parameters
     if File.exist?(@parfile)
       @pars=@pars.merge(YAML.load_file(@parfile))
+    else
+      raise RuntimeError,"Cannot find parameter file, expecting it to be #{parfile} or use -p 'parameter file name'."
     end
 
     out = OptionParser.new do |opts|
@@ -102,7 +174,7 @@ class GraceTree
       opts.banner = "Usage: #{File.basename(__FILE__)} -x COMMAND [options]"
       opts.separator ""
 
-      opts.on("-p","--parameters-file PARFILE","File with parameters (default #{PARFILE}).") do |i|
+      opts.on("-p","--parameters-file PARFILE","File with parameters (default #{PARFILE}, i.e. in the same directory as #{File.basename(__FILE__)})") do |i|
         @parfile=String.new(i.to_s)
       end
       opts.on("-x","--execute COMMAND","Perform one (or more, using the COMMAND1+COMMAND2+...COMMANDN notation) "+
@@ -110,12 +182,12 @@ class GraceTree
         self.options_default_str("execute")+":\n#{GraceTree.valid_commands.join("\n")}") do |i|
         @pars["execute"]=String.new(i.to_s)
       end
-      opts.on("-r","--root ROOT","Index files below ROOT"+
+      opts.on("-r","--root ROOT","Index files below ROOT "+
         self.options_default_str("root")+'.') do |i|
         @pars["root"]=File.expand_path(String.new(i.to_s))
       end
       opts.on("-S","--sink SINK","Copy files to SINK/FILETYPE "+
-        self.options_default_str("sink")+'.') do |i|
+        self.options_default_str("sink",", i.e. $SCRATCH/gracetree")+'.') do |i|
         @pars["sink"]=File.expand_path(String.new(i.to_s))
       end
       opts.on("-y","--year YEAR","Replace the placeholder '#{PLACEHOLDER[:year]}' in SUBIR or INFIX with this value "+
@@ -166,8 +238,8 @@ class GraceTree
         self.options_default_str("clean-grep")+'.') do |i|
         @pars["clean-grep"]=i
       end
-      opts.on("-?","--[no-]debug","Turn on debug mode (very verbose!) "+
-        self.options_default_str("debug")+'.') do |i|
+      opts.on("-?","--[no-]debug","Turn on debug mode "+
+        self.options_default_str("debug",' and makes output very verbose!')+'.') do |i|
         @pars["debug"]=i
       end
 
