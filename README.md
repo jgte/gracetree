@@ -1,5 +1,6 @@
 # gracetree
 
+`
 Tool to list and retrieve data from files with structured names inside a directory tree.
 Usage: gracetree.rb -x COMMAND [options]
 
@@ -49,3 +50,4 @@ year
     -c, --[no-]clean-grep            Remove filename and PATTERN from grep output (default is <false>).
     -?, --[no-]debug                 Turn on debug mode (very verbose!) (default is <false>).
     -h, --help                       Display this screen.
+`
