@@ -59,7 +59,6 @@ class GraceTree
       "filetype"            => nil,
       "pattern"             => nil,
       "clean-grep"          => false,
-      "data"                => ENV["HOME"]+'/data/gracetree',
       "argv"                => argv,
       "debug"               => false
     }
@@ -154,10 +153,6 @@ class GraceTree
       opts.on("-g","--pattern PATTERN","Grep PATTERN from the files in SINK/FILETYPE "+
         self.options_default_str("pattern")+'.') do |i|
         @pars["pattern"]=String.new(i.to_s)
-      end
-      opts.on("-D","--data DATA","With '-x list2file', save results to DATA directory "+
-        self.options_default_str("data")+'.') do |i|
-        @pars["data"]=String.new(i.to_s)
       end
       opts.on("-a","--arc ARC","Replace the placeholder '#{PLACEHOLDER[:arc]}' in INFIX with this value "+
         self.options_default_str("arc")+'.') do |i|
@@ -466,7 +461,7 @@ class GraceTree
       #get file with solution list
       estimdirfile=GraceTree.new(['-t','estimdir']).xfind
       raise RuntimeError,"Expecting the EstimDirs file to be one, not #{estimdirfile.length}." unless estimdirfile.length==1
-      #build released solutions database1
+      #build released solutions database
       @rsdb=Hash.new
       File.foreach(estimdirfile[0]) do |l|
         a = l.split(' ');
