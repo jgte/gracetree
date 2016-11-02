@@ -2,10 +2,11 @@
 
 
 Tool to list and retrieve data from files with structured names inside a directory tree.
-Usage: gracetree.rb -x COMMAND [options]
 
-    -p, --parameters-file PARFILE    File with project parameters (default /home1/00767/byaa676/data/gracetree/default.par).
-    -x, --execute COMMAND            Perform one (or more, using the COMMAND1+COMMAND2+...COMMANDN notation) of the following project operations (default is <find>):
+    Usage: gracetree.rb -x COMMAND [options]
+
+    -p, --parameters-file PARFILE    File with parameters (default /home1/00767/byaa676/data/gracetree/default.par).
+    -x, --execute COMMAND            Perform one (or more, using the COMMAND1+COMMAND2+...COMMANDN notation) of the following operations (default is <ls>):
     arc
     awk
     awkstr

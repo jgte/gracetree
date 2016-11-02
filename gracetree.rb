@@ -103,11 +103,11 @@ class GraceTree
       opts.banner = "Usage: #{File.basename(__FILE__)} -x COMMAND [options]"
       opts.separator ""
 
-      opts.on("-p","--parameters-file PARFILE","File with project parameters (default #{PARFILE}).") do |i|
+      opts.on("-p","--parameters-file PARFILE","File with parameters (default #{PARFILE}).") do |i|
         @parfile=String.new(i.to_s)
       end
       opts.on("-x","--execute COMMAND","Perform one (or more, using the COMMAND1+COMMAND2+...COMMANDN notation) "+
-        "of the following project operations "+
+        "of the following operations "+
         self.options_default_str("execute")+":\n#{GraceTree.valid_commands.join("\n")}") do |i|
         @pars["execute"]=String.new(i.to_s)
       end
