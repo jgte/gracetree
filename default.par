@@ -1,8 +1,5 @@
 ---
 root: /corral-tacc/utexas/csr
-day: "[0-9][0-9]"
-month: "[0-9][0-9]"
-year: "[0-9][0-9]"
 execute: ls
 
 filetypelist:
