@@ -1,41 +1,41 @@
 # gracetree
 
-`
+
 Tool to list and retrieve data from files with structured names inside a directory tree.
 Usage: gracetree.rb -x COMMAND [options]
 
     -p, --parameters-file PARFILE    File with project parameters (default /home1/00767/byaa676/data/gracetree/default.par).
     -x, --execute COMMAND            Perform one (or more, using the COMMAND1+COMMAND2+...COMMANDN notation) of the following project operations (default is <find>):
-arc
-awk
-awkstr
-copy
-day
-debug
-debug_common_args
-debugall
-debugparticles
-filename
-filename_quick
-filename_raw
-filetype
-filetypelist
-find
-findstr
-grep
-grepstr
-jobid
-jobid_replaced
-ls
-lsstr
-month
-parfile
-particles
-print
-released_solution
-sat
-sink
-year
+    arc
+    awk
+    awkstr
+    copy
+    day
+    debug
+    debug_common_args
+    debugall
+    debugparticles
+    filename
+    filename_quick
+    filename_raw
+    filetype
+    filetypelist
+    find
+    findstr
+    grep
+    grepstr
+    jobid
+    jobid_replaced
+    ls
+    lsstr
+    month
+    parfile
+    particles
+    print
+    released_solution
+    sat
+    sink
+    year
     -r, --root ROOT                  Index files below ROOT(default is </corral-tacc/utexas/csr>).
     -S, --sink SINK                  Copy files to SINK/FILETYPE (default is </scratch/00767/byaa676/gracetree>).
     -y, --year YEAR                  Replace the placeholder 'YEAR' in SUBIR or INFIX with this value (default is <[0-9][0-9]>).
@@ -50,4 +50,3 @@ year
     -c, --[no-]clean-grep            Remove filename and PATTERN from grep output (default is <false>).
     -?, --[no-]debug                 Turn on debug mode (very verbose!) (default is <false>).
     -h, --help                       Display this screen.
-`
