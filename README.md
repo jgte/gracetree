@@ -78,7 +78,7 @@ The `gracetree.rb` utility does not work without the parameter file, unless if t
 
 ## Operations
 
-Refer to the slides in `gracetree-presentation.pdf` for some examples on using this tool.
+Refer to the slides in [`gracetree-presentation.pdf`](https://github.com/jgte/gracetree/blob/master/gracetree-presentation.pdf) for some examples on using this tool.
 
 ## Problems?
 
