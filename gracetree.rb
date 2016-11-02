@@ -1,17 +1,17 @@
 #!/usr/bin/env ruby
 
+
 require 'yaml'
 require 'optparse'
 require 'pp'
 require 'fileutils'
 require 'benchmark'
-require ENV["HOME"]+"/lib/libutils.rb"
-require ENV["HOME"]+"/bin/dirtree.rb"
+require File.dirname(__FILE__)+"/libutils.rb"
 
 class GraceTree
   attr_accessor :parfile, :pars, :pars_input, :deppars, :rsdb, :adb
 
-  PARFILE=ENV["HOME"]+"/data/gracetree/default.par"
+  PARFILE=File.dirname(__FILE__)+"/default.par"
   PLACEHOLDER={
     :year   => 'YEAR',
     :month  => 'MONTH',
@@ -175,6 +175,7 @@ class GraceTree
         puts opts
         exit
       end
+      raise RuntimeError,"Directory #{pars["sink"]} does not exist, please create it." unless File.directory?(@pars["sink"])
     end
     #parse it
     out.parse(argv)
@@ -620,6 +621,7 @@ class GraceTree
   end
 
   def xls(args=Hash.new)
+    LibUtils.peek(args,'in:args',@pars["debug"])
     out = LibUtils.natural_sort(`$(which ls) -1 -U #{xlsstr(args)}`.split("\n").map{|f| File.zero?(f) ? nil : f}.compact)
     raise RuntimeError,"Could not list the requested files." unless $?.success?
     return out
