@@ -165,8 +165,6 @@ class GraceTree
     #load parameters
     if File.exist?(@parfile)
       @pars=@pars.merge(YAML.load_file(@parfile))
-    else
-      raise RuntimeError,"Cannot find parameter file, expecting it to be #{parfile} or use -p 'parameter file name'."
     end
 
     out = OptionParser.new do |opts|
@@ -271,6 +269,8 @@ class GraceTree
       :c0           => nil,
       :n0           => nil,
     }.merge(args)
+    #need to patch things up when there's no methodlist in the parfile
+    @pars["methodlist"].nil? ? methodlist=Hash.new : methodlist=@pars["methodlist"]
     LibUtils.peek(args,'args',@pars["debug"]&&debug_here)
     case
     when args[:com].include?('+')
@@ -301,7 +301,7 @@ class GraceTree
           dat[c][i]
         }.join(' ')
       }
-    when @pars["methodlist"].has_key?(args[:com])
+    when methodlist.has_key?(args[:com])
       # http://stackoverflow.com/questions/11566094/trying-to-split-string-into-single-words-or-quoted-words-and-want-to-keep-the
       out=GraceTree.new(
         @pars["argv"]+@pars["methodlist"][args[:com]].split(/\s(?=(?:[^"]|"[^"]*")*$)/).map{|a| a.gsub('"','')}
@@ -336,7 +336,7 @@ class GraceTree
     return out
   end
 
-  def xdebug_common_args
+  def debug_common_args
     out=['-y',@pars["year"],'-m',@pars["month"],'-d',@pars["day"]]
     out+=['-?'] if @pars["debug"]
     return out
@@ -363,7 +363,7 @@ class GraceTree
   def debugallfiletypes(methodlist)
     out=Hash.new
       xfiletypelist.each_key do |k|
-        out[k]=GraceTree.new(['-t',k.to_s]+xdebug_common_args).xdebug(methodlist)
+        out[k]=GraceTree.new(['-t',k.to_s]+self.debug_common_args).xdebug(methodlist)
       end
     return out
   end
@@ -422,19 +422,6 @@ class GraceTree
     @deppars[:filetype]
   end
 
-  # def concurrent(pars_now=Hash.new)
-  #   LibUtils.peek(pars_now,"pars_now")
-  #   #save current parameters
-  #   saved_pars=@pars.dup
-  #   #update with requested parameter set
-  #   @pars=@pars_input.merge(pars_now)
-  #   LibUtils.peek(@pars,"@pars")
-  #   #execute block code
-  #   yield
-  #   #restore saved parameters
-  #   @pars=saved_pars
-  # end
-
   def xfilename_raw(args=Hash.new)
     args={
       :filetype=>xfiletype,
@@ -487,7 +474,7 @@ class GraceTree
     #replace placeholders with requested filename parts
     [:year,:month,:day,:jobid,:sat,:arc].each do |k|
       LibUtils.peek(k,'iter:k',@pars["debug"]&&debug_here)
-      out=out.gsub(PLACEHOLDER[k],particles[k.to_s]) unless particles[k.to_s].nil?
+      out=out.gsub(PLACEHOLDER[k],particles[k.to_s].to_s) unless particles[k.to_s].nil?
       LibUtils.peek(out,'iter:out',@pars["debug"]&&debug_here)
     end
     return out
@@ -506,22 +493,6 @@ class GraceTree
       out[k]=@pars[k]
     end
     return out.merge(particles)
-  end
-
-  def xjobid_replaced(str=@pars["root"  ]+"/"+
-       xfiletypelist[xfiletype]["subdir"]+"/"+
-       xfiletypelist[xfiletype]["prefix"]+
-       xfiletypelist[xfiletype]["infix" ]+
-       xfiletypelist[xfiletype]["suffix"]
-  )
-    if xfiletypelist[xfiletype].has_key?("jobid_from") && @pars["jobid"]!=PLACEHOLDER[:jobid]
-      self.concurrent({"filetype"=>xfiletypelist[xfiletype]["jobid_from"]}) do
-        jobid_list=xjobid
-      end
-      str.gsub(PLACEHOLDER[:jobid],'{'+jobid_list.join(",")+'}')
-    else
-      str.gsub(PLACEHOLDER[:jobid],@pars["jobid"])
-    end
   end
 
   def released_solutions_io(op,dbfile=@pars["sink"]+'/'+DATABASE[:rs])
