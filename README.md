@@ -69,11 +69,13 @@ If you work on Lonestart 5, you can use the `gracetree.rb` script in the followi
 
     /home1/00767/byaa676/bin
 
-Copy `gracetree.rb` (along with `default.par`) to a directory of your choice (ideally one that is in your `$PATH`) or add the directory above to your `$PATH` (be aware there are numerous other scripts in this directory, and some may not work for you).
+Copy `gracetree.rb` (along with `default.par`) to a directory of your choice (ideally one that is in your `$PATH`).
 
-You can also link the `gracetree.rb` and `default.par` (symbolically, i.e. `ln -s`) in the directory above to a location of your choice. This is the least preferred method, since any change I make to either file will reflect on you.
+You can also link the `gracetree.rb` and `default.par` (since these are symbolic links themselves, you'll end up with symbolic links) in the directory above to a location of your choice.
+Alternatively, add the directory above to your `$PATH` (be aware there are numerous other scripts in this directory, and some may not work for you).
+These are the least preferred methods, since any change I make to either file will reflect on you.
 
-The `gracetree.rb` utility does not work without the parameter file, unless if the `-p` option is used, along with an alternative parameter file.
+The `gracetree.rb` utility works best with a parameter file, otherwise the functionality is extremely limited.
 
 ## Operations
 
