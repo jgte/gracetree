@@ -195,6 +195,9 @@ class GraceTree
         rescue ArgumentError
           @pars["year"]=String.new(i.to_s)
         end
+        #some sanity
+        raise RuntimeError,"Expecting --year to be two digits." unless @pars["year"].length==2
+
       end
       opts.on("-m","--month MONTH","Replace the placeholder '#{PLACEHOLDER[:month]}' in SUBIR or INFIX with this value "+
         self.options_default_str("month")+'.') do |i|
@@ -580,6 +583,8 @@ class GraceTree
       next if m.nil?
       #save this capture
       out_now=m.captures[0]
+      #get the next captuure if this is "RL05" or "RL05b"
+      out_now=m.captures[1] if out_now=~/RL05|RL05b/
       LibUtils.peek(out_now,'iter:1:out_now',@pars["debug"]&&debug_here)
       #skip this file is there is no capture
       next if out_now.nil?
