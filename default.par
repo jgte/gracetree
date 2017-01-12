@@ -9,12 +9,17 @@ filetypelist:
     suffix: RL05
   #this is needed in order to provide the wildcarded version of the <released_solution> methods
   released_solution:
-    subdir: byaa705/grace/grav/RL05_YEAR-MONTH/[a-z]/iter
+    subdir: byaa705/grace/grav/(RL05|RL05b)_YEAR-MONTH/[a-z]/iter
   estim:
     subdir: <released_solution>/solution
     prefix: R.common.
     infix: arcARC.to.arcARC.JOBID
     suffix: .estim
+  scales:
+    subdir: <released_solution>/solution
+    prefix: R.
+    infix: global
+    suffix: .JOBID.estim
   input:
     subdir: <released_solution>/arc_R
     prefix: INPUT_
@@ -38,17 +43,32 @@ filetypelist:
     prefix: grc_aak_orb
     infix: _20YEAR-MONTH-DAY_RL61_GPSRL62_RL052leo.JOBID
     suffix: .rep
+  aakout:
+    subdir: grace/YEAR/MONTH/conv_orb_l
+    prefix: grc_aak_orb
+    infix: _20YEAR-MONTH-DAY_RL61_GPSRL62_RL052leo.JOBID
+    suffix: .out
   acc+attrep:
     subdir: grace/YEAR/MONTH/conv_orb_l
     prefix: grcSAT_acc+att_orb
     infix: _20YEAR-MONTH-DAY_RL61_GPSRL62_RL05.JOBID
     suffix: .rep
+  acc+attout:
+    subdir: grace/YEAR/MONTH/conv_orb_l
+    prefix: grcSAT_acc+att_orb
+    infix: _20YEAR-MONTH-DAY_RL61_GPSRL62_RL05.JOBID
+    suffix: .out
   jtk:
     subdir: grace/YEAR/monitor_l
     prefix: grcgrv_jtk
     infix: _20YEAR-MONTH-DAY-
     suffix: RL05.JOBID
     jobid_from: input
+  mod:
+    subdir: grace/YEAR/MONTH/gps_orb_l
+    prefix: grcSAT_gps_orb
+    infix: _20YEAR-MONTH-DAY_
+    suffix: RL61_GPSRL62_RL05.JOBID.acc
 
 #always use double quotes to keep an argument from being split (single quotes are not supported)
 methodlist:
@@ -60,6 +80,7 @@ methodlist:
   arcdate:                   -x jtkdate+jtkmjd+arclist
 
   inputdate:   -t input      -x year+month+day
+  scaledate:   -t scales     -x year+month
 
   accattdate:   -t acc+attrep -x year+month+day
   accattepoch1: -t acc+attrep -x awk -g "/EPOCH1/ {print $2$3$4}"
@@ -232,6 +253,11 @@ methodlist:
   grA.AC0ZD.estim:     -t estim -x grep -g "GRC-A ACZD"
   grA.AC0ZQ.estim:     -t estim -x grep -g "GRC-A ACZQ"
 
+  # scales, GRACE-A
+  grA.AC1X.estim:      -t scales -x grep -g "GRC-A AC1X"
+  grA.AC1Y.estim:      -t scales -x grep -g "GRC-A AC1Y"
+  grA.AC1Z.estim:      -t scales -x grep -g "GRC-A AC1Z"
+
   # estim, GRACE-B
   grB.AC0X.estim:      -t estim -x grep -g "GRC-B AC0X"
   grB.AC0XD.estim:     -t estim -x grep -g "GRC-B ACXD"
@@ -263,3 +289,8 @@ methodlist:
   grB.AC0Z.estim:      -t estim -x grep -g "GRC-B AC0Z"
   grB.AC0ZD.estim:     -t estim -x grep -g "GRC-B ACZD"
   grB.AC0ZQ.estim:     -t estim -x grep -g "GRC-B ACZQ"
+
+  # scales, GRACE-B
+  grB.AC1X.estim:      -t scales -x grep -g "GRC-B AC1X"
+  grB.AC1Y.estim:      -t scales -x grep -g "GRC-B AC1Y"
+  grB.AC1Z.estim:      -t scales -x grep -g "GRC-B AC1Z"
