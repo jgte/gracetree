@@ -9,7 +9,7 @@ filetypelist:
     suffix: RL05
   #this is needed in order to provide the wildcarded version of the <released_solution> methods
   released_solution:
-    subdir: byaa705/grace/grav/(RL05|RL05b)_YEAR-MONTH/[a-z]/iter
+    subdir: byaa705/grace/grav/RL05_YEAR-MONTH/[a-z]/iter
   estim:
     subdir: <released_solution>/solution
     prefix: R.common.
@@ -69,6 +69,11 @@ filetypelist:
     prefix: grcSAT_gps_orb
     infix: _20YEAR-MONTH-DAY_
     suffix: RL61_GPSRL62_RL05.JOBID.acc
+  pts:
+    subdir: <released_solution>/PTS
+    prefix: PTS_RL05_
+    infix: YEAR-MONTH_20YEAR-MONTH-DAY_R.common.arcARC.to.arcARC.JOBID
+    suffix: .estim
 
 #always use double quotes to keep an argument from being split (single quotes are not supported)
 methodlist:
@@ -76,8 +81,9 @@ methodlist:
   jtkduration: -t jtk        -x awk -g "{print $13}"
   jtkmjd:      -t jtk        -x awk -g "{print $4}"
   jtkdate:     -t jtk        -x awk -g "{print $3}"
-  arclist:     -t estim      -x arc
+  arclist:     -t pts        -x arc
   arcdate:                   -x jtkdate+jtkmjd+arclist
+  arctimeline:               -x arclist+jtkdate+inputdate+jtkstart+jtkduration
 
   inputdate:   -t input      -x year+month+day
   scaledate:   -t scales     -x year+month
@@ -92,6 +98,10 @@ methodlist:
   aakepoch2:   -t aakrep     -x awk -g "/EPOCH2/ {print $2$3$4}"
   aakepoch:                  -x aakepoch1+aakepoch2
 
+  dateconsistency:           -x inputdate+aakdate+accattdate+jtkdate
+
+  ptsarcstart: -t pts -x awk -g "{print $7}"
+  ptsparam:    -t pts -x awk -g "{print $1, $2}"
 
   # aakrep, GRACE-A
   grA.AC0X.aak:      -t aakrep -x grep -g "GRC-A    AC0X "
@@ -222,36 +232,36 @@ methodlist:
   grB.AC0ZQ.accatt:     -t acc+attrep -x grep -s B -g "GRC-B    AC0ZQ"
 
   # estim, GRACE-A
-  grA.AC0X.estim:      -t estim -x grep -g "GRC-A AC0X"
-  grA.AC0XD.estim:     -t estim -x grep -g "GRC-A ACXD"
-  grA.AC0XQ.estim:     -t estim -x grep -g "GRC-A ACXQ"
-  grA.AC0Y1.estim:     -t estim -x grep -g "GRC-A 1C0Y"
-  grA.AC0Y2.estim:     -t estim -x grep -g "GRC-A 2C0Y"
-  grA.AC0Y3.estim:     -t estim -x grep -g "GRC-A 3C0Y"
-  grA.AC0Y4.estim:     -t estim -x grep -g "GRC-A 4C0Y"
-  grA.AC0Y5.estim:     -t estim -x grep -g "GRC-A 5C0Y"
-  grA.AC0Y6.estim:     -t estim -x grep -g "GRC-A 6C0Y"
-  grA.AC0Y7.estim:     -t estim -x grep -g "GRC-A 7C0Y"
-  grA.AC0Y8.estim:     -t estim -x grep -g "GRC-A 8C0Y"
-  grA.AC0YD1.estim:    -t estim -x grep -g "GRC-A 1CYD"
-  grA.AC0YD2.estim:    -t estim -x grep -g "GRC-A 2CYD"
-  grA.AC0YD3.estim:    -t estim -x grep -g "GRC-A 3CYD"
-  grA.AC0YD4.estim:    -t estim -x grep -g "GRC-A 4CYD"
-  grA.AC0YD5.estim:    -t estim -x grep -g "GRC-A 5CYD"
-  grA.AC0YD6.estim:    -t estim -x grep -g "GRC-A 6CYD"
-  grA.AC0YD7.estim:    -t estim -x grep -g "GRC-A 7CYD"
-  grA.AC0YD8.estim:    -t estim -x grep -g "GRC-A 8CYD"
-  grA.AC0YQ1.estim:    -t estim -x grep -g "GRC-A 1CYQ"
-  grA.AC0YQ2.estim:    -t estim -x grep -g "GRC-A 2CYQ"
-  grA.AC0YQ3.estim:    -t estim -x grep -g "GRC-A 3CYQ"
-  grA.AC0YQ4.estim:    -t estim -x grep -g "GRC-A 4CYQ"
-  grA.AC0YQ5.estim:    -t estim -x grep -g "GRC-A 5CYQ"
-  grA.AC0YQ6.estim:    -t estim -x grep -g "GRC-A 6CYQ"
-  grA.AC0YQ7.estim:    -t estim -x grep -g "GRC-A 7CYQ"
-  grA.AC0YQ8.estim:    -t estim -x grep -g "GRC-A 8CYQ"
-  grA.AC0Z.estim:      -t estim -x grep -g "GRC-A AC0Z"
-  grA.AC0ZD.estim:     -t estim -x grep -g "GRC-A ACZD"
-  grA.AC0ZQ.estim:     -t estim -x grep -g "GRC-A ACZQ"
+  grA.AC0X.estim:      -t pts -x grep -g "GRC-A AC0X"
+  grA.AC0XD.estim:     -t pts -x grep -g "GRC-A ACXD"
+  grA.AC0XQ.estim:     -t pts -x grep -g "GRC-A ACXQ"
+  grA.AC0Y1.estim:     -t pts -x grep -g "GRC-A 1C0Y"
+  grA.AC0Y2.estim:     -t pts -x grep -g "GRC-A 2C0Y"
+  grA.AC0Y3.estim:     -t pts -x grep -g "GRC-A 3C0Y"
+  grA.AC0Y4.estim:     -t pts -x grep -g "GRC-A 4C0Y"
+  grA.AC0Y5.estim:     -t pts -x grep -g "GRC-A 5C0Y"
+  grA.AC0Y6.estim:     -t pts -x grep -g "GRC-A 6C0Y"
+  grA.AC0Y7.estim:     -t pts -x grep -g "GRC-A 7C0Y"
+  grA.AC0Y8.estim:     -t pts -x grep -g "GRC-A 8C0Y"
+  grA.AC0YD1.estim:    -t pts -x grep -g "GRC-A 1CYD"
+  grA.AC0YD2.estim:    -t pts -x grep -g "GRC-A 2CYD"
+  grA.AC0YD3.estim:    -t pts -x grep -g "GRC-A 3CYD"
+  grA.AC0YD4.estim:    -t pts -x grep -g "GRC-A 4CYD"
+  grA.AC0YD5.estim:    -t pts -x grep -g "GRC-A 5CYD"
+  grA.AC0YD6.estim:    -t pts -x grep -g "GRC-A 6CYD"
+  grA.AC0YD7.estim:    -t pts -x grep -g "GRC-A 7CYD"
+  grA.AC0YD8.estim:    -t pts -x grep -g "GRC-A 8CYD"
+  grA.AC0YQ1.estim:    -t pts -x grep -g "GRC-A 1CYQ"
+  grA.AC0YQ2.estim:    -t pts -x grep -g "GRC-A 2CYQ"
+  grA.AC0YQ3.estim:    -t pts -x grep -g "GRC-A 3CYQ"
+  grA.AC0YQ4.estim:    -t pts -x grep -g "GRC-A 4CYQ"
+  grA.AC0YQ5.estim:    -t pts -x grep -g "GRC-A 5CYQ"
+  grA.AC0YQ6.estim:    -t pts -x grep -g "GRC-A 6CYQ"
+  grA.AC0YQ7.estim:    -t pts -x grep -g "GRC-A 7CYQ"
+  grA.AC0YQ8.estim:    -t pts -x grep -g "GRC-A 8CYQ"
+  grA.AC0Z.estim:      -t pts -x grep -g "GRC-A AC0Z"
+  grA.AC0ZD.estim:     -t pts -x grep -g "GRC-A ACZD"
+  grA.AC0ZQ.estim:     -t pts -x grep -g "GRC-A ACZQ"
 
   # scales, GRACE-A
   grA.AC1X.estim:      -t scales -x grep -g "GRC-A AC1X"
@@ -259,36 +269,36 @@ methodlist:
   grA.AC1Z.estim:      -t scales -x grep -g "GRC-A AC1Z"
 
   # estim, GRACE-B
-  grB.AC0X.estim:      -t estim -x grep -g "GRC-B AC0X"
-  grB.AC0XD.estim:     -t estim -x grep -g "GRC-B ACXD"
-  grB.AC0XQ.estim:     -t estim -x grep -g "GRC-B ACXQ"
-  grB.AC0Y1.estim:     -t estim -x grep -g "GRC-B 1C0Y"
-  grB.AC0Y2.estim:     -t estim -x grep -g "GRC-B 2C0Y"
-  grB.AC0Y3.estim:     -t estim -x grep -g "GRC-B 3C0Y"
-  grB.AC0Y4.estim:     -t estim -x grep -g "GRC-B 4C0Y"
-  grB.AC0Y5.estim:     -t estim -x grep -g "GRC-B 5C0Y"
-  grB.AC0Y6.estim:     -t estim -x grep -g "GRC-B 6C0Y"
-  grB.AC0Y7.estim:     -t estim -x grep -g "GRC-B 7C0Y"
-  grB.AC0Y8.estim:     -t estim -x grep -g "GRC-B 8C0Y"
-  grB.AC0YD1.estim:    -t estim -x grep -g "GRC-B 1CYD"
-  grB.AC0YD2.estim:    -t estim -x grep -g "GRC-B 2CYD"
-  grB.AC0YD3.estim:    -t estim -x grep -g "GRC-B 3CYD"
-  grB.AC0YD4.estim:    -t estim -x grep -g "GRC-B 4CYD"
-  grB.AC0YD5.estim:    -t estim -x grep -g "GRC-B 5CYD"
-  grB.AC0YD6.estim:    -t estim -x grep -g "GRC-B 6CYD"
-  grB.AC0YD7.estim:    -t estim -x grep -g "GRC-B 7CYD"
-  grB.AC0YD8.estim:    -t estim -x grep -g "GRC-B 8CYD"
-  grB.AC0YQ1.estim:    -t estim -x grep -g "GRC-B 1CYQ"
-  grB.AC0YQ2.estim:    -t estim -x grep -g "GRC-B 2CYQ"
-  grB.AC0YQ3.estim:    -t estim -x grep -g "GRC-B 3CYQ"
-  grB.AC0YQ4.estim:    -t estim -x grep -g "GRC-B 4CYQ"
-  grB.AC0YQ5.estim:    -t estim -x grep -g "GRC-B 5CYQ"
-  grB.AC0YQ6.estim:    -t estim -x grep -g "GRC-B 6CYQ"
-  grB.AC0YQ7.estim:    -t estim -x grep -g "GRC-B 7CYQ"
-  grB.AC0YQ8.estim:    -t estim -x grep -g "GRC-B 8CYQ"
-  grB.AC0Z.estim:      -t estim -x grep -g "GRC-B AC0Z"
-  grB.AC0ZD.estim:     -t estim -x grep -g "GRC-B ACZD"
-  grB.AC0ZQ.estim:     -t estim -x grep -g "GRC-B ACZQ"
+  grB.AC0X.estim:      -t pts -x grep -g "GRC-B AC0X"
+  grB.AC0XD.estim:     -t pts -x grep -g "GRC-B ACXD"
+  grB.AC0XQ.estim:     -t pts -x grep -g "GRC-B ACXQ"
+  grB.AC0Y1.estim:     -t pts -x grep -g "GRC-B 1C0Y"
+  grB.AC0Y2.estim:     -t pts -x grep -g "GRC-B 2C0Y"
+  grB.AC0Y3.estim:     -t pts -x grep -g "GRC-B 3C0Y"
+  grB.AC0Y4.estim:     -t pts -x grep -g "GRC-B 4C0Y"
+  grB.AC0Y5.estim:     -t pts -x grep -g "GRC-B 5C0Y"
+  grB.AC0Y6.estim:     -t pts -x grep -g "GRC-B 6C0Y"
+  grB.AC0Y7.estim:     -t pts -x grep -g "GRC-B 7C0Y"
+  grB.AC0Y8.estim:     -t pts -x grep -g "GRC-B 8C0Y"
+  grB.AC0YD1.estim:    -t pts -x grep -g "GRC-B 1CYD"
+  grB.AC0YD2.estim:    -t pts -x grep -g "GRC-B 2CYD"
+  grB.AC0YD3.estim:    -t pts -x grep -g "GRC-B 3CYD"
+  grB.AC0YD4.estim:    -t pts -x grep -g "GRC-B 4CYD"
+  grB.AC0YD5.estim:    -t pts -x grep -g "GRC-B 5CYD"
+  grB.AC0YD6.estim:    -t pts -x grep -g "GRC-B 6CYD"
+  grB.AC0YD7.estim:    -t pts -x grep -g "GRC-B 7CYD"
+  grB.AC0YD8.estim:    -t pts -x grep -g "GRC-B 8CYD"
+  grB.AC0YQ1.estim:    -t pts -x grep -g "GRC-B 1CYQ"
+  grB.AC0YQ2.estim:    -t pts -x grep -g "GRC-B 2CYQ"
+  grB.AC0YQ3.estim:    -t pts -x grep -g "GRC-B 3CYQ"
+  grB.AC0YQ4.estim:    -t pts -x grep -g "GRC-B 4CYQ"
+  grB.AC0YQ5.estim:    -t pts -x grep -g "GRC-B 5CYQ"
+  grB.AC0YQ6.estim:    -t pts -x grep -g "GRC-B 6CYQ"
+  grB.AC0YQ7.estim:    -t pts -x grep -g "GRC-B 7CYQ"
+  grB.AC0YQ8.estim:    -t pts -x grep -g "GRC-B 8CYQ"
+  grB.AC0Z.estim:      -t pts -x grep -g "GRC-B AC0Z"
+  grB.AC0ZD.estim:     -t pts -x grep -g "GRC-B ACZD"
+  grB.AC0ZQ.estim:     -t pts -x grep -g "GRC-B ACZQ"
 
   # scales, GRACE-B
   grB.AC1X.estim:      -t scales -x grep -g "GRC-B AC1X"
