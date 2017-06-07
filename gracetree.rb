@@ -129,6 +129,7 @@ class GraceTree
       "filetype"            => nil,
       "pattern"             => nil,
       "clean-grep"          => false,
+      "copy"                => true,
       "argv"                => argv,
       "debug"               => false
     }
@@ -238,6 +239,10 @@ class GraceTree
       opts.on("-c","--[no-]clean-grep","Remove filename and PATTERN from grep output "+
         self.options_default_str("clean-grep")+'.') do |i|
         @pars["clean-grep"]=i
+      end
+      opts.on("-C","--[no-]copy","Remove filename and PATTERN from grep output "+
+        self.options_default_str("clean-grep")+'.') do |i|
+        @pars["copy"]=i
       end
       opts.on("-?","--[no-]debug","Turn on debug mode "+
         self.options_default_str("debug",' and makes output very verbose!')+'.') do |i|
@@ -499,6 +504,7 @@ class GraceTree
   end
 
   def released_solutions_io(op,dbfile=@pars["sink"]+'/'+DATABASE[:rs])
+    LibUtils.peek(dbfile,'dbfile',@pars["debug"])
     case op
     when :load
       @rsdb=YAML.load_file(dbfile)
@@ -516,8 +522,9 @@ class GraceTree
         m = Date::MONTHNAMES.index(a[2])
         @rsdb[y]=Hash.new unless @rsdb.has_key?(y)
         @rsdb[y][m]=Hash.new unless @rsdb[y].has_key?(m)
-        @rsdb[y][m]=a[4].sub(@pars["root"]+"/",'')
+        @rsdb[y][m]=a[4].sub(@pars["root"]+"/",'').split('/iter/')[0]+'/iter'
         @rsdb[y][m].chop! if @rsdb[y][m][-1..-1]=='/'
+        LibUtils.peek(l,'line',@pars["debug"])
       end
     when :init
       if File.exist?(dbfile)
@@ -538,7 +545,11 @@ class GraceTree
     #retrieve requested solution record
     out=@rsdb[@pars['year' ].to_i][@pars['month'].to_i]
     LibUtils.peek(out,'out',@pars["debug"])
-    raise RuntimeError,"Could not find a released solution for 20#{@pars['year']}/#{@pars['month']}." if out.nil?
+    if out.nil?
+      $stderr.puts "Could not find a released solution for 20#{@pars['year']}/#{@pars['month']}."
+      $stderr.flush
+      exit
+    end
     return out
   end
 
@@ -671,7 +682,7 @@ class GraceTree
   def xls(args=Hash.new)
     LibUtils.peek(args,'in:args',@pars["debug"])
     out = LibUtils.natural_sort(`$(which ls) -1 -U #{xlsstr(args)}`.split("\n").map{|f| File.zero?(f) ? nil : f}.compact)
-    raise RuntimeError,"Could not list the requested files." unless $?.success?
+    exit unless $?.success? #error is shown from shell, not need to make more noise
     return out
   end
 
@@ -679,7 +690,7 @@ class GraceTree
     `mkdir -p #{xsink}`.chomp unless File.directory?(xsink)
     count=0
     xls.each do |f|
-      out=`cp --update --preserve=all #{f} #{xsink}`.chomp
+      out=`rsync -aH --update --times #{f} #{xsink}`.chomp
       unless out.empty?
         puts out
         count+=1
@@ -698,7 +709,7 @@ class GraceTree
   end
 
   def xgrep
-    xcopy
+    xcopy if @pars["copy"]
     out=LibUtils.natural_sort(`#{xgrepstr}`.split("\n"))
     out=out.map{|o| o.sub(Regexp.new('^.*'+pars["pattern"].gsub(/\s+/, ' ')),'')} if @pars["clean-grep"]
     return out
@@ -710,7 +721,7 @@ class GraceTree
   end
 
   def xawk
-    xcopy
+    xcopy if @pars["copy"]
     `#{xawkstr}`.split("\n")
   end
 
