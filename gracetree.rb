@@ -86,6 +86,7 @@ class GraceTree
     :year   => 'YEAR',
     :month  => 'MONTH',
     :day    => 'DAY',
+    :release=> 'RELEASE',
     :jobid  => 'JOBID',
     :arc    => 'ARC',
     :sat    => 'SAT'
@@ -94,21 +95,25 @@ class GraceTree
     :year   => '\d\d',
     :month  => '\d\d',
     :day    => '\d\d',
+    :release=> 'RL\d\d[a-z]?',
     :jobid  => '\d+',
     :arc    => '\d+',
     :sat    => '[AB]'
   }
 
   DEFAULT={
+    :release=>'*',
     :jobid => '*',
     :arc   => '*',
-    :sat   => '[AB]'
+    :sat   => '[AB]',
+    :year  => '[0-9][0-9]',
+    :month => '[0-9][0-9]'
   }
   DATABASE={
     :rs => "released_solutions.database",
   }
   PARTICLE_LIST=[
-    "year","month","day","jobid","sat","arc"
+    "year","month","day","jobid","sat","arc","release"
   ]
 
 
@@ -120,9 +125,10 @@ class GraceTree
       "execute"             => nil,
       "root"                => nil,
       "sink"                => ENV["SCRATCH"]+"/gracetree",
-      "year"                => '[0-9][0-9]',
-      "month"               => '[0-9][0-9]',
+      "year"                => DEFAULT[:year],
+      "month"               => DEFAULT[:month],
       "day"                 => '[0-9][0-9]',
+      "release"             => DEFAULT[:release],
       "jobid"               => DEFAULT[:jobid],
       "arc"                 => DEFAULT[:arc],
       "sat"                 => DEFAULT[:sat],
@@ -181,7 +187,7 @@ class GraceTree
         self.options_default_str("execute")+":\n#{GraceTree.valid_commands.join("\n")}") do |i|
         @pars["execute"]=String.new(i.to_s)
       end
-      opts.on("-r","--root ROOT","Index files below ROOT "+
+      opts.on("-R","--root ROOT","Index files below ROOT "+
         self.options_default_str("root")+'.') do |i|
         @pars["root"]=File.expand_path(String.new(i.to_s))
       end
@@ -191,21 +197,30 @@ class GraceTree
       end
       opts.on("-y","--year YEAR","Replace the placeholder '#{PLACEHOLDER[:year]}' in SUBIR or INFIX with this value "+
         self.options_default_str("year")+'.') do |i|
-        begin
-          @pars["year"]=String.new("%02d" % i.to_s)
-        rescue ArgumentError
-          @pars["year"]=String.new(i.to_s)
+        #only consider the first -y/--year and ignore everything else
+        if @pars["year"] == DEFAULT[:year]
+          begin
+            @pars["year"]=String.new("%02d" % i.to_s)
+          rescue ArgumentError
+            @pars["year"]=String.new(i.to_s)
+          end
+          #some translation
+          case @pars["year"].length
+          when 1; @pars["year"]="0"+@pars["year"]
+          when 2; #do nothing
+          when 4; @pars["year"]=pars["year"][2..3]
+          end
         end
-        #some sanity
-        raise RuntimeError,"Expecting --year to be two digits." unless @pars["year"].length==2
-
       end
       opts.on("-m","--month MONTH","Replace the placeholder '#{PLACEHOLDER[:month]}' in SUBIR or INFIX with this value "+
         self.options_default_str("month")+'.') do |i|
-        begin
-          @pars["month"]=String.new("%02d" % i.to_s)
-        rescue ArgumentError
-          @pars["month"]=String.new(i.to_s)
+        #only consider the first -m/--month and ignore everything else
+        if @pars["month"] == DEFAULT[:month]
+          begin
+            @pars["month"]=String.new("%02d" % i.to_s)
+          rescue ArgumentError
+            @pars["month"]=String.new(i.to_s)
+          end
         end
       end
       opts.on("-d","--day DAY","Replace the placeholder '#{PLACEHOLDER[:day]}' in SUBIR or INFIX with this value "+
@@ -219,6 +234,10 @@ class GraceTree
       opts.on("-j","--jobid JOBID","Replace the placeholder '#{PLACEHOLDER[:jobid]}' in PREFIX, INFIX or SUFFIX with this value "+
         self.options_default_str("jobid")+'.') do |i|
         @pars["jobid"]=String.new(i.to_s)
+      end
+      opts.on("-r","--release RELEASE","Replace the placeholder '#{PLACEHOLDER[:release]}' in PREFIX, INFIX or SUFFIX with this value "+
+        self.options_default_str("release")+'.') do |i|
+        @pars["release"]=String.new(i.to_s)
       end
       opts.on("-t","--filetype FILETYPE","Gather files of type FILETYPE "+
         self.options_default_str("filetype")+'.') do |i|
@@ -269,7 +288,7 @@ class GraceTree
   end
 
   def exec(args=Hash.new)
-    debug_here=false
+    debug_here=true
     #merge input args with default ones
     args={
       :com          => @pars["execute"],
@@ -298,6 +317,12 @@ class GraceTree
           n0=dat[c].length
           c0=c;
         else
+          #expand scalars
+          if n0==1 && dat[c].length>1
+            dat[c0]=dat[c0].cycle(dat[c].length).to_a
+          elsif dat[c].length==1 && n0>1
+            dat[c]=dat[c].cycle(n0).to_a
+          end
           raise RuntimeError,"When using the COMMAND1+COMMAND2+...COMMANDN notation, "+
             " each COMMAND must return arrays of consistent size:\n"+
             "Operation #{c0} returned array of size #{n0}\n"+
@@ -393,6 +418,7 @@ class GraceTree
       "month",
       "day",
       "jobid",
+      "release",
       "sat",
       "arc",
     ])
@@ -404,6 +430,7 @@ class GraceTree
       "month",
       "day",
       "jobid",
+      "release",
       "sat",
       "arc",
     ])
@@ -435,14 +462,16 @@ class GraceTree
       :filetype=>xfiletype,
       :add_root=>true,
     }.merge(args)
+    LibUtils.peek(args,'in:args',@pars["debug"])
     #build complete filename
     out=String.new
     out+=@pars["root"]+"/" if args[:add_root]
+    LibUtils.peek(xfiletypelist[args[:filetype]],'xfiletypelist[args[:filetype]]',@pars["debug"])
     out+=xfiletypelist[args[:filetype]]["subdir"]+'/' unless xfiletypelist[args[:filetype]]["subdir"].nil?
     ["prefix","infix","suffix"].each do |k|
       out+=xfiletypelist[args[:filetype]][k] unless xfiletypelist[args[:filetype]][k].nil?
     end
-    return out
+    return out.gsub('.','\.')
   end
 
   def xfilename(args=Hash.new)
@@ -480,7 +509,7 @@ class GraceTree
     particles=xparticles(args[:particles])
     LibUtils.peek(particles,'particles',@pars["debug"]&&debug_here)
     #replace placeholders with requested filename parts
-    [:year,:month,:day,:jobid,:sat,:arc].each do |k|
+    PARTICLE_LIST.map{|p| p.to_sym}.each do |k|
       LibUtils.peek(k,'iter:k',@pars["debug"]&&debug_here)
       out=out.gsub(PLACEHOLDER[k],particles[k.to_s].to_s) unless particles[k.to_s].nil?
       LibUtils.peek(out,'iter:out',@pars["debug"]&&debug_here)
@@ -543,7 +572,8 @@ class GraceTree
     #load/build released solutions database
     self.released_solutions_io(:init)
     #retrieve requested solution record
-    out=@rsdb[@pars['year' ].to_i][@pars['month'].to_i]
+    LibUtils.peek(@pars,'@pars',@pars["debug"])
+    out=@rsdb[@pars['year'].to_i][@pars['month'].to_i]
     LibUtils.peek(out,'out',@pars["debug"])
     if out.nil?
       $stderr.puts "Could not find a released solution for 20#{@pars['year']}/#{@pars['month']}."
@@ -588,12 +618,15 @@ class GraceTree
     #loop over file list and use file match to pick the value of the requested particle
     out=Array.new
     file_list.each do |f|
+      LibUtils.peek(fm,'iter:-1:fm',@pars["debug"]&&debug_here)
       m=f.match(fm)
       LibUtils.peek(m,'iter:m',@pars["debug"]&&debug_here)
+      LibUtils.peek(m.captures.join(','),'iter:m.captures',@pars["debug"]&&debug_here)
       #skip this file is there is no match
       next if m.nil?
       #save this capture
       out_now=m.captures[0]
+      LibUtils.peek(out_now,'iter:0:out_now',@pars["debug"]&&debug_here)
       #get the next captuure if this is "RL05" or "RL05b"
       out_now=m.captures[1] if out_now=~/RL05|RL05b/
       LibUtils.peek(out_now,'iter:1:out_now',@pars["debug"]&&debug_here)
@@ -611,6 +644,9 @@ class GraceTree
 
   def xjobid
     self.get_particle(:jobid)
+  end
+  def xrelease
+    self.get_particle(:release)
   end
   def xyear
     self.get_particle(:year)
@@ -660,17 +696,21 @@ class GraceTree
       from_particles.each do |k|
         LibUtils.peek(k,'iter:k',@pars["debug"])
         #get target filetype
-        ft=xfiletypelist[xfiletype][k]
+        ft=xfiletypelist[args[:filetype]][k]
         LibUtils.peek(ft,'iter:ft',@pars["debug"])
         #get particle name (just remove '_from')
         p=k.sub('_from','').to_sym
         LibUtils.peek(p,'iter:p',@pars["debug"])
         #get list of particles from target filetype
-        particles[p.to_s]='{'+
-          self.get_particle(
-            p,{:filetype=>ft}
-          ).join(",")+
-          '}'
+        plist=self.get_particle(
+          p,{:filetype=>ft}
+        )
+        #if there's only one value for this particle, then use it literally
+        if plist.length==1
+          particles[p.to_s]=plist
+        else
+          particles[p.to_s]='{'+plist.join(",")+'}'
+        end
         LibUtils.peek(particles,'iter:particles',@pars["debug"])
       end
       out=xfilename(args.merge({:particles=>particles}))
@@ -681,8 +721,8 @@ class GraceTree
 
   def xls(args=Hash.new)
     LibUtils.peek(args,'in:args',@pars["debug"])
-    out = LibUtils.natural_sort(`$(which ls) -1 -U #{xlsstr(args)}`.split("\n").map{|f| File.zero?(f) ? nil : f}.compact)
-    exit unless $?.success? #error is shown from shell, not need to make more noise
+    out = LibUtils.natural_sort(`$(which ls) -1 -U #{xlsstr(args)}`.split("\n").map{|f| File.zero?(f) ? nil : f}.compact.uniq)
+    # exit unless $?.success? #error is shown from shell, not need to make more noise
     return out
   end
 
@@ -696,13 +736,17 @@ class GraceTree
         count+=1
       end
     end
-    "Copied #{count} files from:\n#{xlsstr}\nto:\n#{sink}" if count>0
+    if count>0
+      $stderr.puts "Copied #{count} file(s) from:\n#{xlsstr}\nto:\n#{sink}\n"+
+      "showing the first few files:\n#{xls[0..[10.xls.length].min].join("\n")}"
+      $stderr.flush
+    end
   end
 
   def xgrepstr
     raise RuntimeError,"Need PATTERN." if pars["pattern"].nil?
     #NOTICE: never user --no-filename with grep because the sorting is done at the level of the filename, so that the retrieved data remains aligned
-    "for file in $($(which ls) -1 -U #{xsink}/#{File.basename(xfilename_quick)}); do "+
+    "for file in #{xls.join(' ')}; do "+
       "[ -s $file ] && "+
       "echo $file: $(grep '#{pars["pattern"]}' $file || echo '#{pars["pattern"]}'); "+
     "done"
@@ -717,7 +761,7 @@ class GraceTree
 
   def xawkstr
     raise RuntimeError,"Need PATTERN." if pars["pattern"].nil?
-    "awk '#{pars["pattern"]}' #{xsink}/#{File.basename(xfilename_quick)}"
+    "awk '#{pars["pattern"].gsub("'",'"')}' #{xsink}/#{File.basename(xfilename_quick)}"
   end
 
   def xawk
