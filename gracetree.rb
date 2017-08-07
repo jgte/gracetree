@@ -87,6 +87,7 @@ class GraceTree
     :month  => 'MONTH',
     :day    => 'DAY',
     :release=> 'RELEASE',
+    :reldate=> 'RELDATE',
     :jobid  => 'JOBID',
     :arc    => 'ARC',
     :sat    => 'SAT'
@@ -96,6 +97,7 @@ class GraceTree
     :month  => '\d\d',
     :day    => '\d\d',
     :release=> 'RL\d\d[a-z]?',
+    :reldate=> 'RL\d\d[a-z]?_\d\d-\d\d',
     :jobid  => '\d+',
     :arc    => '\d+',
     :sat    => '[AB]'
@@ -103,17 +105,19 @@ class GraceTree
 
   DEFAULT={
     :release=>'*',
+    :reldate=>'*',
     :jobid => '*',
     :arc   => '*',
     :sat   => '[AB]',
     :year  => '[0-9][0-9]',
-    :month => '[0-9][0-9]'
+    :month => '[0-9][0-9]',
+    :day   => '[0-9][0-9]',
   }
   DATABASE={
     :rs => "released_solutions.database",
   }
   PARTICLE_LIST=[
-    "year","month","day","jobid","sat","arc","release"
+    "year","month","day","jobid","sat","arc","release","reldate"
   ]
 
 
@@ -127,8 +131,9 @@ class GraceTree
       "sink"                => ENV["SCRATCH"]+"/gracetree",
       "year"                => DEFAULT[:year],
       "month"               => DEFAULT[:month],
-      "day"                 => '[0-9][0-9]',
+      "day"                 => DEFAULT[:day],
       "release"             => DEFAULT[:release],
+      "reldate"             => DEFAULT[:reldate],
       "jobid"               => DEFAULT[:jobid],
       "arc"                 => DEFAULT[:arc],
       "sat"                 => DEFAULT[:sat],
@@ -419,6 +424,7 @@ class GraceTree
       "day",
       "jobid",
       "release",
+      "reldate",
       "sat",
       "arc",
     ])
@@ -431,6 +437,7 @@ class GraceTree
       "day",
       "jobid",
       "release",
+      "reldate",
       "sat",
       "arc",
     ])
@@ -491,6 +498,8 @@ class GraceTree
       LibUtils.peek(n,'iter:n',@pars["debug"]&&debug_here)
       #retrieve string to replace the named part
       if args[:wildcarded_named_parts]
+        raise RuntimeError,"BUG TRAP: this condition needs debugging/implmentation."
+        #this was the old code, figure it out!
         replace_str=xfilename_raw({
           :filetype=>n,
           :add_root=>false
@@ -546,14 +555,32 @@ class GraceTree
       #build released solutions database
       @rsdb=Hash.new
       File.foreach(estimdirfile[0]) do |l|
-        a = l.split(' ');
-        y = a[1].sub('20','').to_i
-        m = Date::MONTHNAMES.index(a[2])
-        @rsdb[y]=Hash.new unless @rsdb.has_key?(y)
-        @rsdb[y][m]=Hash.new unless @rsdb[y].has_key?(m)
-        @rsdb[y][m]=a[4].sub(@pars["root"]+"/",'').split('/iter/')[0]+'/iter'
-        @rsdb[y][m].chop! if @rsdb[y][m][-1..-1]=='/'
         LibUtils.peek(l,'line',@pars["debug"])
+        a = l.split(' ');
+        LibUtils.peek(a[8],'mjd start',@pars["debug"])
+        #TODO: clean this up, it is not longer useful
+        # y = a[1].sub('20','').to_i
+        # m = Date::MONTHNAMES.index(a[2])
+        #build dirname
+        dir=a[4].sub(@pars["root"]+"/",'').split('/iter/')[0]+'/iter'
+        dir.chop! if dir[-1..-1]=='/'
+        #loop over all days in this solution
+        ((a[8].to_i+1)..a[9].to_i).each do |mjd|
+          #build date
+          today=Date.jd(mjd.to_i+2400000)
+          LibUtils.peek(today.to_s+' '+mjd.to_s,'today mjd',@pars["debug"])
+          #retrieve year, month and day
+          y=today.year-2000
+          m=today.month
+          d=today.day
+          #make sure this combination of keys is assigned
+          @rsdb[y]=Hash.new unless @rsdb.has_key?(y)
+          @rsdb[y][m]=Hash.new unless @rsdb[y].has_key?(m)
+          @rsdb[y][m][d]=Hash.new unless @rsdb[y][m].has_key?(d)
+          #save directory day-wise
+          @rsdb[y][m][d]=dir
+        end
+        LibUtils.peek(a[9],'mjd stop',@pars["debug"])
       end
     when :init
       if File.exist?(dbfile)
@@ -571,15 +598,23 @@ class GraceTree
     raise RuntimeError,"Need valid YEAR and MONTH to retrieve the released solution." if @pars['month'].to_i.zero? or @pars['year'].to_i.zero?
     #load/build released solutions database
     self.released_solutions_io(:init)
+    #assign a reasonable day if it is not given
+    if @pars['day']==DEFAULT[:day]
+      d=15
+    else
+      d=@pars['day'].to_i
+    end
+    LibUtils.peek(@pars['year' ]+'-'+@pars['month']+'-'+d.to_s,'today', @pars["debug"])
+    LibUtils.peek(@rsdb[@pars['year'].to_i][@pars['month'].to_i][d],"@rsdb[#{@pars['year']}][#{@pars['month']}][#{d}]",@pars["debug"])
     #retrieve requested solution record
-    LibUtils.peek(@pars,'@pars',@pars["debug"])
-    out=@rsdb[@pars['year'].to_i][@pars['month'].to_i]
+    out=@rsdb[@pars['year'].to_i][@pars['month'].to_i][d]
     LibUtils.peek(out,'out',@pars["debug"])
     if out.nil?
       $stderr.puts "Could not find a released solution for 20#{@pars['year']}/#{@pars['month']}."
       $stderr.flush
       exit
     end
+    #done
     return out
   end
 
@@ -596,7 +631,7 @@ class GraceTree
     debug_here=true
     args={
       :particles=>{particle_name.to_s => nil},
-      :wildcarded_named_parts => true
+      :wildcarded_named_parts => false
     }.merge(args)
     LibUtils.peek(particle_name,'in:particle_name',@pars["debug"]&&debug_here)
     LibUtils.peek(args,'in:args',@pars["debug"]&&debug_here)
@@ -647,6 +682,9 @@ class GraceTree
   end
   def xrelease
     self.get_particle(:release)
+  end
+  def xreldate
+    self.get_particle(:reldate)
   end
   def xyear
     self.get_particle(:year)
