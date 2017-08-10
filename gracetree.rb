@@ -244,6 +244,10 @@ class GraceTree
         self.options_default_str("release")+'.') do |i|
         @pars["release"]=String.new(i.to_s)
       end
+      opts.on("-D","--reldate RELEASE_DATE","Replace the placeholder '#{PLACEHOLDER[:reldate]}' in PREFIX, INFIX or SUFFIX with this value "+
+        self.options_default_str("reldate")+'.') do |i|
+        @pars["reldate"]=String.new(i.to_s)
+      end
       opts.on("-t","--filetype FILETYPE","Gather files of type FILETYPE "+
         self.options_default_str("filetype")+'.') do |i|
         @pars["filetype"]=String.new(i.to_s)
@@ -594,23 +598,47 @@ class GraceTree
     end
   end
 
+  def solution_date(d="15")
+    raise RuntimeError,"Need valid YEAR and MONTH or RELEASE_DATE to retrieve the released solution." \
+          if ( @pars['month'].to_i.zero? or @pars['year'].to_i.zero? ) && @pars['reldate']==DEFAULT[:reldate]
+    #transalate year
+    if @pars['reldate']==DEFAULT[:reldate]
+      y=@pars['year']
+    else
+      y=@pars['reldate'].split('_')[1].split('-')[0]
+    end
+    #transalate month
+    if @pars['reldate']==DEFAULT[:reldate]
+      m=@pars['month']
+    else
+      m=@pars['reldate'].split('_')[1].split('-')[1]
+    end
+    #over-write the defaul day value if it is set
+    d=@pars['day'] unless @pars['day']==DEFAULT[:day]
+    return y,m,d
+  end
+
   def xreleased_solution
-    raise RuntimeError,"Need valid YEAR and MONTH to retrieve the released solution." if @pars['month'].to_i.zero? or @pars['year'].to_i.zero?
     #load/build released solutions database
     self.released_solutions_io(:init)
-    #assign a reasonable day if it is not given
-    if @pars['day']==DEFAULT[:day]
-      d=15
-    else
-      d=@pars['day'].to_i
-    end
-    LibUtils.peek(@pars['year' ]+'-'+@pars['month']+'-'+d.to_s,'today', @pars["debug"])
-    LibUtils.peek(@rsdb[@pars['year'].to_i][@pars['month'].to_i][d],"@rsdb[#{@pars['year']}][#{@pars['month']}][#{d}]",@pars["debug"])
-    #retrieve requested solution record
-    out=@rsdb[@pars['year'].to_i][@pars['month'].to_i][d]
-    LibUtils.peek(out,'out',@pars["debug"])
-    if out.nil?
-      $stderr.puts "Could not find a released solution for 20#{@pars['year']}/#{@pars['month']}."
+    #init output
+    out=String.new
+    begin
+      ["15","7","21","4","11","18","25"].each do |d|
+        y,m,d=solution_date(d)
+        LibUtils.peek("20"+y+'-'+m+'-'+d,'today', @pars["debug"])
+        LibUtils.peek(@rsdb[y.to_i][m.to_i][d.to_i],"@rsdb[#{y}][#{m}][#{d}]",@pars["debug"])
+        #retrieve requested solution record
+        out=@rsdb[y.to_i][m.to_i][d.to_i]
+        LibUtils.peek(out,'out',@pars["debug"])
+        #exit loop if something was found
+        break unless out.nil?
+      end
+      #trigger rescue if we didn't find any valid solution for this month
+      raise if out.nil?
+    rescue
+      y,m=solution_date
+      $stderr.puts "Could not find a released solution for 20#{y}/#{m}."
       $stderr.flush
       exit
     end
@@ -619,9 +647,9 @@ class GraceTree
   end
 
   def xsink(base=@pars["sink"])
-    raise RuntimeError,"Need valid YEAR and MONTH to build sink directory name." if @pars['month'].to_i.zero? or @pars['year'].to_i.zero?
     unless @deppars.has_key?(:sink)
-      @deppars[:sink] = base+'/'+@pars["filetype"]+'/'+@pars['year']+'/'+@pars['month']
+      y,m=solution_date
+      @deppars[:sink] = base+'/'+@pars["filetype"]+'/'+y+'/'+m
     else
       @deppars[:sink]
     end
@@ -757,19 +785,29 @@ class GraceTree
     return out
   end
 
+  def flock
+    return "flock #{ENV["SCRATCH"]}/gracetree/lock"
+  end
+
   def xls(args=Hash.new)
     LibUtils.peek(args,'in:args',@pars["debug"])
-    out = LibUtils.natural_sort(`$(which ls) -1 -U #{xlsstr(args)}`.split("\n").map{|f| File.zero?(f) ? nil : f}.compact.uniq)
+    out = LibUtils.natural_sort(Dir.glob(xlsstr(args)).map{|f| File.zero?(f) ? nil : f}.compact.uniq)
     # exit unless $?.success? #error is shown from shell, not need to make more noise
     return out
   end
 
+  def xls_scratch(args=Hash.new)
+    LibUtils.peek(args,'in:args',@pars["debug"])
+    xls.each.map{ |f| xsink+'/'+File.basename(f) }
+  end
+
   def xcopy
-    `mkdir -p #{xsink}`.chomp unless File.directory?(xsink)
+    `#{flock} mkdir -p #{xsink}`.chomp unless File.directory?(xsink)
     count=0
     xls.each do |f|
-      out=`rsync -aH --update --times #{f} #{xsink}`.chomp
-      unless out.empty?
+      if File.size?(f).nil?
+        out=`#{flock} rsync -aH --update --times #{f} #{xsink}`.chomp
+        raise RuntimeError,"Failed to copy file #{f} to #{xsink}." unless $?.success?
         puts out
         count+=1
       end
@@ -784,7 +822,7 @@ class GraceTree
   def xgrepstr
     raise RuntimeError,"Need PATTERN." if pars["pattern"].nil?
     #NOTICE: never user --no-filename with grep because the sorting is done at the level of the filename, so that the retrieved data remains aligned
-    "for file in #{xls.join(' ')}; do "+
+    "for file in #{xls_scratch.join(' ')}; do "+
       "[ -s $file ] && "+
       "echo $file: $(grep '#{pars["pattern"]}' $file || echo '#{pars["pattern"]}'); "+
     "done"
@@ -792,14 +830,25 @@ class GraceTree
 
   def xgrep
     xcopy if @pars["copy"]
-    out=LibUtils.natural_sort(`#{xgrepstr}`.split("\n"))
+    # out=`#{xgrepstr}`.split("\n")
+    out=xls_scratch.map{ |file|
+      open(file){ |f|
+        f.grep(Regexp.new(@pars["pattern"])).map { |g|
+          file+': '+g.gsub('  ',' ').chomp
+        }
+      }
+    }.flatten
+    LibUtils.peek(out,'out',@pars["debug"])
+    out=LibUtils.natural_sort(out)
+    LibUtils.peek(out,'out:sorted',@pars["debug"])
     out=out.map{|o| o.sub(Regexp.new('^.*'+pars["pattern"].gsub(/\s+/, ' ')),'')} if @pars["clean-grep"]
+    LibUtils.peek(out,'out:cleaned',@pars["debug"])
     return out
   end
 
   def xawkstr
     raise RuntimeError,"Need PATTERN." if pars["pattern"].nil?
-    "awk '#{pars["pattern"].gsub("'",'"')}' #{xsink}/#{File.basename(xfilename_quick)}"
+    "awk '#{pars["pattern"].gsub("'",'"')}' #{xls_scratch.join(' ')}"
   end
 
   def xawk
