@@ -546,7 +546,8 @@ class GraceTree
   end
 
   def released_solutions_io(op,dbfile=@pars["sink"]+'/'+DATABASE[:rs])
-    LibUtils.peek(dbfile,'dbfile',@pars["debug"])
+    debug_here=false
+    LibUtils.peek(dbfile,'dbfile',@pars["debug"]||debug_here)
     case op
     when :load
       @rsdb=YAML.load_file(dbfile)
@@ -559,23 +560,24 @@ class GraceTree
       #build released solutions database
       @rsdb=Hash.new
       File.foreach(estimdirfile[0]) do |l|
-        LibUtils.peek(l,'line',@pars["debug"])
+        LibUtils.peek(l,'line',@pars["debug"]||debug_here)
         a = l.split(' ');
-        LibUtils.peek(a[8],'mjd start',@pars["debug"])
+        LibUtils.peek(a[8],'mjd start',@pars["debug"]||debug_here)
         #TODO: clean this up, it is not longer useful
         # y = a[1].sub('20','').to_i
         # m = Date::MONTHNAMES.index(a[2])
         #build dirname
-        dir=a[4].sub(@pars["root"]+"/",'').split('/iter/')[0]+'/iter'
+        dir=a[4].sub(@pars["root"]+"/",'').split('/iter')[0]+'/iter'
         dir.chop! if dir[-1..-1]=='/'
+        reldate=a[4].split('/')[7]
         #loop over all days in this solution
         ((a[8].to_i+1)..a[9].to_i).each do |mjd|
           #build date
           today=Date.jd(mjd.to_i+2400000)
-          LibUtils.peek(today.to_s+' '+mjd.to_s,'today mjd',@pars["debug"])
+          LibUtils.peek(today.to_s+' '+mjd.to_s+' '+reldate,'today mjd release',@pars["debug"]||debug_here)
           #retrieve year, month and day
-          y=today.year-2000
-          m=today.month
+          y=solution_year(reldate).to_i
+          m=solution_month(reldate).to_i
           d=today.day
           #make sure this combination of keys is assigned
           @rsdb[y]=Hash.new unless @rsdb.has_key?(y)
@@ -584,7 +586,7 @@ class GraceTree
           #save directory day-wise
           @rsdb[y][m][d]=dir
         end
-        LibUtils.peek(a[9],'mjd stop',@pars["debug"])
+        LibUtils.peek(a[9],'mjd stop',@pars["debug"]||debug_here)
       end
     when :init
       if File.exist?(dbfile)
@@ -598,6 +600,13 @@ class GraceTree
     end
   end
 
+  def solution_year(reldate=@pars['reldate'])
+    reldate.split('_')[1].split('-')[0]
+  end
+  def solution_month(reldate=@pars['reldate'])
+    reldate.split('_')[1].split('-')[1]
+  end
+
   def solution_date(d="15")
     raise RuntimeError,"Need valid YEAR and MONTH or RELEASE_DATE to retrieve the released solution." \
           if ( @pars['month'].to_i.zero? or @pars['year'].to_i.zero? ) && @pars['reldate']==DEFAULT[:reldate]
@@ -605,13 +614,13 @@ class GraceTree
     if @pars['reldate']==DEFAULT[:reldate]
       y=@pars['year']
     else
-      y=@pars['reldate'].split('_')[1].split('-')[0]
+      y=solution_year
     end
     #transalate month
     if @pars['reldate']==DEFAULT[:reldate]
       m=@pars['month']
     else
-      m=@pars['reldate'].split('_')[1].split('-')[1]
+      m=solution_month
     end
     #over-write the defaul day value if it is set
     d=@pars['day'] unless @pars['day']==DEFAULT[:day]
@@ -644,15 +653,6 @@ class GraceTree
     end
     #done
     return out
-  end
-
-  def xsink(base=@pars["sink"])
-    unless @deppars.has_key?(:sink)
-      y,m=solution_date
-      @deppars[:sink] = base+'/'+@pars["filetype"]+'/'+y+'/'+m
-    else
-      @deppars[:sink]
-    end
   end
 
   def get_particle(particle_name,args=Hash.new)
@@ -690,13 +690,18 @@ class GraceTree
       #save this capture
       out_now=m.captures[0]
       LibUtils.peek(out_now,'iter:0:out_now',@pars["debug"]&&debug_here)
-      #get the next captuure if this is "RL05" or "RL05b"
-      out_now=m.captures[1] if out_now=~/RL05|RL05b/
-      LibUtils.peek(out_now,'iter:1:out_now',@pars["debug"]&&debug_here)
-      #skip this file is there is no capture
-      next if out_now.nil?
-      #append century if year
-      out_now='20'+out_now if particle_name==:year
+      # #TODO: figure out the reason for this
+      # #get the next capture if this is "RL05" or "RL05b"
+      # out_now=m.captures[1] if out_now=~/RL05|RL05b/
+      # LibUtils.peek(out_now,'iter:1:out_now',@pars["debug"]&&debug_here)
+      # #skip this file is there is no capture
+      # next if out_now.nil?
+      #special handling
+      case particle_name
+      when :year
+        #prepend century if year
+        out_now='20'+out_now
+      end
       LibUtils.peek(out_now,'iter:2:out_now',@pars["debug"]&&debug_here)
       #save to output array
       out<<out_now
@@ -796,25 +801,43 @@ class GraceTree
     return out
   end
 
+  def xsink(base=@pars["sink"])
+    debug_here=false
+    unless @deppars.has_key?(:sink)
+      y,m=solution_date
+      LibUtils.peek(y,'in:y',@pars["debug"] || debug_here)
+      LibUtils.peek(m,'in:m',@pars["debug"] || debug_here)
+      LibUtils.peek(@pars["year"],'in:@pars["year"]',@pars["debug"] || debug_here)
+      LibUtils.peek(@pars["month"],'in:@pars["month"]',@pars["debug"] || debug_here)
+      @deppars[:sink] = base+'/'+@pars["filetype"]+'/'+y+'/'+m
+    else
+      @deppars[:sink]
+    end
+  end
+
   def xls_scratch(args=Hash.new)
     LibUtils.peek(args,'in:args',@pars["debug"])
     xls.each.map{ |f| xsink+'/'+File.basename(f) }
   end
 
   def xcopy
+    debug_here=false
     `#{flock} mkdir -p #{xsink}`.chomp unless File.directory?(xsink)
     count=0
+    fsink=String.new
     xls.each do |f|
-      if File.size?(f).nil?
-        out=`#{flock} rsync -aH --update --times #{f} #{xsink}`.chomp
+      fsink=xsink+'/'+File.basename(f)
+      LibUtils.peek(f,    'iter:f',    @pars["debug"] || debug_here)
+      LibUtils.peek(fsink,'iter:fsink',@pars["debug"] || debug_here)
+      if File.size?(fsink).nil? || File.mtime(fsink) < File.mtime(f)
+        out=`#{flock} rsync -aH --update --times --itemize-changes #{f} #{xsink} 1>&2`.chomp
         raise RuntimeError,"Failed to copy file #{f} to #{xsink}." unless $?.success?
         puts out
         count+=1
       end
     end
     if count>0
-      $stderr.puts "Copied #{count} file(s) from:\n#{xlsstr}\nto:\n#{sink}\n"+
-      "showing the first few files:\n#{xls[0..[10.xls.length].min].join("\n")}"
+      $stderr.puts "Copied #{count} file(s) from:\n#{xlsstr}\nto:\n#{xsink}"
       $stderr.flush
     end
   end
@@ -830,14 +853,15 @@ class GraceTree
 
   def xgrep
     xcopy if @pars["copy"]
-    # out=`#{xgrepstr}`.split("\n")
-    out=xls_scratch.map{ |file|
-      open(file){ |f|
-        f.grep(Regexp.new(@pars["pattern"])).map { |g|
-          file+': '+g.gsub('  ',' ').chomp
-        }
-      }
-    }.flatten
+    out=`#{xgrepstr}`.split("\n")
+    # Don't use this: it looses the blanks in parameters with sub-arcs (e.g. AC0YD6)
+    # out=xls_scratch.map{ |file|
+    #   open(file){ |f|
+    #     f.grep(Regexp.new(@pars["pattern"])).map { |g|
+    #       file+': '+g.gsub('  ',' ').chomp
+    #     }
+    #   }
+    # }.flatten
     LibUtils.peek(out,'out',@pars["debug"])
     out=LibUtils.natural_sort(out)
     LibUtils.peek(out,'out:sorted',@pars["debug"])
