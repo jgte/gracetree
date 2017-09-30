@@ -48,6 +48,11 @@ filetypelist:
     prefix: grc_aak_orb
     infix: _20YEAR-MONTH-DAY_RL61_GPSRL62_RL052leo.JOBID
     suffix: .out
+  aakinp:
+    subdir: grace/YEAR/MONTH/conv_orb_l
+    prefix: grc_aak_orb
+    infix: _20YEAR-MONTH-DAY_RL61_GPSRL62_RL052leo.JOBID
+    suffix: .inp
   acc+attrep:
     subdir: grace/YEAR/MONTH/conv_orb_l
     prefix: grcSAT_acc+att_orb
@@ -55,9 +60,29 @@ filetypelist:
     suffix: .rep
   acc+attout:
     subdir: grace/YEAR/MONTH/conv_orb_l
-    prefix: grc_acc+att_orb
+    prefix: grcSAT_acc+att_orb
+    infix: _20YEAR-MONTH-DAY_RL61_GPSRL62_RL05.JOBID
+    suffix: .output
+  acc+attinp:
+    subdir: grace/YEAR/MONTH/conv_orb_l
+    prefix: grcSAT_acc+att_orb
+    infix: _20YEAR-MONTH-DAY_RL61_GPSRL62_RL05.JOBID
+    suffix: .inp
+  gpsgrvrep:
+    subdir: grace/YEAR/MONTH/gps_reg_l
+    prefix: grcSAT_gpsgrv
+    infix: _20YEAR-MONTH-DAY_RL61_GPSRL62_RL05.JOBID
+    suffix: .rep
+  gpsgrvout:
+    subdir: grace/YEAR/MONTH/gps_reg_l
+    prefix: grcSAT_gpsgrv
     infix: _20YEAR-MONTH-DAY_RL61_GPSRL62_RL05.JOBID
     suffix: .out
+  gpsgrvinp:
+    subdir: grace/YEAR/MONTH/gps_reg_l
+    prefix: grcSAT_gpsgrv
+    infix: _20YEAR-MONTH-DAY_RL61_GPSRL62_RL05.JOBID
+    suffix: .inp
   jtk:
     subdir: grace/YEAR/monitor_l
     prefix: grcgrv_jtk
@@ -79,6 +104,9 @@ filetypelist:
     prefix: grcaak_jtk
     infix: _20YEAR-MONTH-DAY-RELEASE
     suffix: 2leo.JOBID
+    year_from: jtk
+    month_from: jtk
+    day_from: jtk
   jtkgps:
     subdir: grace/YEAR/monitor_l
     prefix: grcgps_jtk
@@ -94,6 +122,8 @@ filetypelist:
     prefix: PTS_RELDATE_
     infix: 20YEAR-MONTH-DAY_R.common.arcARC.to.arcARC.JOBID
     suffix: .estim
+    year_from: jtk
+    month_from: jtk
     day_from: jtk
   outpts:
     subdir: <released_solution>/PTS
@@ -110,7 +140,26 @@ filetypelist:
     prefix: grace
     infix: .20YEAR-MONTH-DAY_X_61.JOBID
     suffix: .kbr.preNH+res_edited
-
+  ddr:
+    subdir: grace/html/YEARDOY/img
+    prefix: grcSAT
+    infix: _acc+att_orb_20YEAR-MONTH-DAY_RL61_GPSRL62_RL05.JOBID.
+    suffix: ddr.png
+  kbr_filt_rrate:
+    subdir: grace/html/YEARDOY/img
+    prefix: grc.kbrres
+    infix: .acc+att.20YEAR-MONTH-DAY_RL61_RL05.JOBID.
+    suffix: kbr_filt_rrate.png
+  kbrran:
+    subdir: grace/html/YEARDOY/img
+    prefix: grc.kbrres
+    infix: .acc+att.20YEAR-MONTH-DAY_RL61_RL05.JOBID.
+    suffix: kbrran.png
+  kbrrra:
+    subdir: grace/html/YEARDOY/img
+    prefix: grc.kbrres
+    infix: .acc+att.20YEAR-MONTH-DAY_RL61_RL05.JOBID.
+    suffix: kbrrra.png
 
 #always use double quotes to keep an argument from being split (single quotes are not supported)
 methodlist:
@@ -149,7 +198,7 @@ methodlist:
   jtkduration: -t jtk        -x awk -g "{print $13}"
 
   krrobsargs:  -t krrobsfiles -x awk -g "BEGIN {FS='[_-.]'}; {print '-y',$13-2000,'-m',$14,'-d',$15}"
-  krrregargs:  -t krrregfiles -x awk -g "BEGIN {FS='[_-.]'}; {print '-y',$11,     '-m',$12,'-d',$13}"
+  krrregargs:  -t krrregfiles -x awk -g "BEGIN {FS='[_-.]'}; {print sprintf('-D RL05_%02d-%02d -d %02d',$11,$12,$13)}"
 
   arclist:     -t pts        -x arc
   arcdate:                   -x jtkdate+jtkmjd+arclist
