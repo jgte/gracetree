@@ -145,6 +145,7 @@ class GraceTree
       "pattern"             => nil,
       "clean-grep"          => false,
       "copy"                => true,
+      "copylimit"           => 1000,
       "argv"                => argv,
       "debug"               => false
     }
@@ -280,9 +281,13 @@ class GraceTree
         self.options_default_str("clean-grep")+'.') do |i|
         @pars["clean-grep"]=i
       end
-      opts.on("-C","--[no-]copy","Remove filename and PATTERN from grep output "+
+      opts.on("-C","--[no-]copy","Copy files before grepping/awking "+
         self.options_default_str("clean-grep")+'.') do |i|
         @pars["copy"]=i
+      end
+      opts.on("-L","--copy-limit COPY_LIMIT","Do not copy more than COPY_LIMIT files to $SCRATCH "+
+        self.options_default_str("copy-limit")+'.') do |i|
+        @pars["copylimit"]=i.to_i
       end
       opts.on("-?","--[no-]debug","Turn on debug mode "+
         self.options_default_str("debug",' and makes output very verbose!')+'.') do |i|
@@ -906,10 +911,11 @@ class GraceTree
   def xcopy
     debug_here=false
     `#{flock} mkdir -p #{xsink}`.chomp unless File.directory?(xsink)
-    #do not copy fully-wildcarded file names
     LibUtils.peek(xlsstr,         "xlsstr",         @pars["debug"] || debug_here)
     LibUtils.peek(xfilename_quick,"xfilename_quick",@pars["debug"] || debug_here)
-    return if xlsstr==xfilename_quick
+    #do not copy too many files
+    LibUtils.peek(xls.length,"xls.length",@pars["debug"] || debug_here)
+    raise RuntimeError,"May need to copy #{xls.length} files, which is above the COPY_LIMIT (#{@pars["copylimit"]})." if xls.length>@pars["copylimit"]
     count=0
     fsink=String.new
     xls.each do |f|

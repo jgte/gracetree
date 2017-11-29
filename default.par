@@ -9,7 +9,7 @@ filetypelist:
     suffix: RL05
   #this is needed in order to provide the wildcarded version of the <released_solution> methods
   released_solution:
-    subdir: byaa705/grace/grav/RELEASE_YEAR-MONTH/[a-z]/iter
+    subdir: "byaa705/grace/grav/RELEASE_YEAR-MONTH/[a-z]/iter"
   estim:
     subdir: <released_solution>/solution
     prefix: R.common.
@@ -193,12 +193,17 @@ methodlist:
   jtkdate:     -t jtk        -x awk -g "{print $3}"
   jtkmjd:      -t jtk        -x awk -g "{print $4}"
   jtkACID:     -t jtk        -x awk -g "{print $5}"
-  jtkGRID:     -t jtk        -x awk -g "{print $6}" #same as JOBID
+  jtkGRID:     -t jtk        -x awk -g "{print $6}" #same as JOBID (reported in the gps/krrregfiles)
   jtkstart:    -t jtk        -x awk -g "{print $12}"
   jtkduration: -t jtk        -x awk -g "{print $13}"
 
+  krrregGRID:  -t krrregfiles -x awk -g "BEGIN {FS='.'}; {print $2}"
+  krrobsEDID:  -t krrobsfiles -x awk -g "BEGIN {FS='.'}; {print $3}"
+
   krrobsargs:  -t krrobsfiles -x awk -g "BEGIN {FS='[_-.]'}; {print '-y',$13-2000,'-m',$14,'-d',$15}"
   krrregargs:  -t krrregfiles -x awk -g "BEGIN {FS='[_-.]'}; {print sprintf('-D RL05_%02d-%02d -d %02d',$11,$12,$13)}"
+
+
 
   arclist:     -t pts        -x arc
   arcdate:                   -x jtkdate+jtkmjd+arclist
@@ -226,8 +231,8 @@ methodlist:
   ptsday:      -t pts -x day
   ptsdate:            -x ptsyear+ptsmonth+ptsday
 
-  accattargs:  -t jtk -x year+jtkdoy+jtkstart+jtkduration+jtkaakEDID
-  regresargs:  -t jtk -x year+jtkdoy+jtkACID+jtkaakEDID            -r RL05
+  accattargs:  -t jtk -x year+jtkdoy+jtkstart+jtkduration+krrobsEDID
+  regresargs:  -t jtk -x year+jtkdoy+jtkACID+krrobsEDID            -r RL05
 
   # aakrep, GRACE-A
   grA.AC0X.aak:      -t aakrep -x grep -g "GRC-A    AC0X "
