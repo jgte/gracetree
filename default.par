@@ -3,41 +3,6 @@ root: /corral-tacc/utexas/csr
 execute: ls
 
 filetypelist:
-  estimdir:
-    subdir: grace/aux
-    prefix: EstimDirs_
-    suffix: RL05
-  #this is needed in order to provide the wildcarded version of the <released_solution> methods
-  released_solution:
-    subdir: "byaa705/grace/grav/RELEASE_YEAR-MONTH/[a-z]/iter"
-  estim:
-    subdir: <released_solution>/solution
-    prefix: R.common.
-    infix: arcARC.to.arcARC.JOBID
-    suffix: .estim
-  scales:
-    subdir: <released_solution>/solution
-    prefix: R.
-    infix: global
-    suffix: .JOBID.estim
-  input:
-    subdir: <released_solution>/arc_R
-    prefix: INPUT_
-    infix: YEAR-MONTH-DAY_RL61_62_RELEASE
-    suffix: .JOBID.*
-  krrregfiles:
-    subdir: <released_solution>/..
-    prefix: krr
-    suffix: .reg.files
-  krrobsfiles:
-    subdir: <released_solution>/..
-    prefix: krr
-    suffix: .obs.files
-  gpsregfiles:
-    subdir: <released_solution>/..
-    prefix: gps
-    infix: SAT
-    suffix: .reg.files
   aakrep:
     subdir: grace/YEAR/MONTH/conv_orb_l
     prefix: grc_aak_orb
@@ -53,6 +18,11 @@ filetypelist:
     prefix: grc_aak_orb
     infix: _20YEAR-MONTH-DAY_RL61_GPSRL62_RL052leo.JOBID
     suffix: .inp
+  aakscript:
+    subdir: grace/YEAR/MONTH/conv_orb_l
+    prefix: grc_aak_orb
+    infix: _20YEAR-MONTH-DAY_RL61_GPSRL62_RL052leo.JOBID
+    suffix: .script
   acc+attrep:
     subdir: grace/YEAR/MONTH/conv_orb_l
     prefix: grcSAT_acc+att_orb
@@ -68,6 +38,11 @@ filetypelist:
     prefix: grcSAT_acc+att_orb
     infix: _20YEAR-MONTH-DAY_RL61_GPSRL62_RL05.JOBID
     suffix: .inp
+  acc+attscript:
+    subdir: grace/YEAR/MONTH/conv_orb_l
+    prefix: grc_acc+att_orb
+    infix: _20YEAR-MONTH-DAY_RL61_GPSRL62_RL05.JOBID
+    suffix: .script
   gpsgrvrep:
     subdir: grace/YEAR/MONTH/gps_reg_l
     prefix: grcSAT_gpsgrv
@@ -83,6 +58,11 @@ filetypelist:
     prefix: grcSAT_gpsgrv
     infix: _20YEAR-MONTH-DAY_RL61_GPSRL62_RL05.JOBID
     suffix: .inp
+  gpsgrvscript:
+    subdir: grace/YEAR/MONTH/gps_orb_l
+    prefix: grc_gps_orb
+    infix: _20YEAR-MONTH-DAY_RL61_GPSRL62_RL05.JOBID
+    suffix: .script
   jtk:
     subdir: grace/YEAR/monitor_l
     prefix: grcgrv_jtk
@@ -117,24 +97,14 @@ filetypelist:
     prefix: grcSAT_gps_orb
     infix: _20YEAR-MONTH-DAY_
     suffix: RL61_GPSRL62_RL05.JOBID.acc
-  pts:
-    subdir: <released_solution>/PTS
-    prefix: PTS_RELDATE_
-    infix: 20YEAR-MONTH-DAY_R.common.arcARC.to.arcARC.JOBID
-    suffix: .estim
-    year_from: jtk
-    month_from: jtk
-    day_from: jtk
-  outpts:
-    subdir: <released_solution>/PTS
-    prefix: out.PTS_RELDATE_
-    infix: 20YEAR-MONTH-DAY_R.local.arcARC.file1.JOBID
-    suffix: .estim
   kbrres:
     subdir: grace/YEAR/MONTH/kbr_chk_l
     prefix: grace
     infix: .20YEAR-MONTH-DAY_X_61.JOBID
     suffix: .kbr.preNH+res
+    year_from: jtk
+    month_from: jtk
+    day_from: jtk
   kbrres_edited:
     subdir: grace/YEAR/MONTH/kbr_chk_l
     prefix: grace
@@ -160,8 +130,87 @@ filetypelist:
     prefix: grc.kbrres
     infix: .acc+att.20YEAR-MONTH-DAY_RL61_RL05.JOBID.
     suffix: kbrrra.png
+  krrregres:
+    subdir: REG_RELEASE/regres_20YEAR_MONTH
+    prefix: krr
+    infix: _YEAR-MONTH-DAY_RL61_62_RELEASE.JOBID.
+    suffix: reg
+  gpsregres:
+    subdir: REG_RELEASE/regres_20YEAR_MONTH
+    prefix: gpsSAT
+    infix: _YEAR-MONTH-DAY_RL61_GPSRL62_RELEASE.JOBID.
+    suffix: reg
 
-#always use double quotes to keep an argument from being split (single quotes are not supported)
+# /corral-tacc/utexas/csr/grace/08/04/kbr_reg_l/grc_grv_kbrres.2008-04-21_RL61_RL05.1519351117.res
+#---------------------------------------------------------------------------------
+#NOTICE: these files depend on the <released_solution>, so -D must be given (and preferably NOT -y and -m)
+#---------------------------------------------------------------------------------
+  estimdir:
+    subdir: grace/aux
+    prefix: EstimDirs_
+    suffix: RL05
+  #this is needed in order to provide the wildcarded version of the <released_solution> methods
+  released_solution:
+    subdir: "byaa705/grace/grav/RELEASE_YEAR-MONTH/[a-z]/iter"
+  estim:
+    subdir: <released_solution>/solution
+    prefix: R.common.
+    infix: arcARC.to.arcARC.JOBID
+    suffix: .estim
+  scales:
+    subdir: <released_solution>/solution
+    prefix: R.
+    infix: global
+    suffix: .JOBID.estim
+  input:
+    subdir: <released_solution>/arc_R
+    prefix: INPUT_
+    infix: YEAR-MONTH-DAY_RL61_62_RELEASE
+    suffix: .JOBID.*
+  krrreg:
+    subdir: <released_solution>/..
+    prefix: krr
+    suffix: .reg.files
+  krrobs:
+    subdir: <released_solution>/..
+    prefix: krr
+    suffix: .obs.files
+  gpsreg:
+    subdir: <released_solution>/..
+    prefix: gps
+    infix: SAT
+    suffix: .reg.files
+  pts:
+    subdir: <released_solution>/PTS
+    prefix: PTS_RELDATE_
+    infix: 20YEAR-MONTH-DAY_R.common.arcARC.to.arcARC.JOBID
+    suffix: .estim
+    year_from: jtk
+    month_from: jtk
+    day_from: jtk
+  outpts:
+    subdir: <released_solution>/PTS
+    prefix: out.PTS_RELDATE_
+    infix: 20YEAR-MONTH-DAY_R.local.arcARC.file1.JOBID
+    suffix: .estim
+  job_aesop:
+    subdir: <released_solution>/..
+    prefix: job_Aesop_RL05.
+    suffix: JOBID
+  resid:
+    subdir: <released_solution>/postfit
+    prefix: krr
+    infix: _YEAR-MONTH-DAY_RL61_62_RL05.JOBID.
+    suffix: resid
+  geo60:
+    subdir: <released_solution>/solution_60
+    prefix: GEO
+    infix: .
+    suffix: JOBID
+#---------------------------------------------------------------------------------
+#NOTICE: these are methods, that means they are called with -x, e.g. gracetree.rb -y 8 -m 5 -x jtkaakdate
+#        always use double quotes to keep an argument from being split (single quotes are not supported)
+#---------------------------------------------------------------------------------
 methodlist:
 
   jtkgpsdoy:   -t jtkgps     -x awk -g "{print $2}"
@@ -178,8 +227,8 @@ methodlist:
   jtkaccdoy:   -t jtkacc     -x awk -g "{print $2}"
   jtkaccdate:  -t jtkacc     -x awk -g "{print $3}"
   jtkaccmjd:   -t jtkacc     -x awk -g "{print $4}"
-  jtkaccOOID:  -t jtkacc     -x awk -g "{print $5}"
-  jtkaccACID:  -t jtkacc     -x awk -g "{print $6}" #same as JOBID
+  jtkaccOOID:  -t jtkacc     -x awk -g "{print $5} {nextfile}" #some jtkacc files have duplicate lines
+  jtkaccACID:  -t jtkacc     -x awk -g "{print $6} {nextfile}" #same as JOBID
 
   jtkgrvdoy:      -t jtkgrv  -x awk -g "{print $2}"
   jtkgrvdate:     -t jtkgrv  -x awk -g "{print $3}"
@@ -193,17 +242,24 @@ methodlist:
   jtkdate:     -t jtk        -x awk -g "{print $3}"
   jtkmjd:      -t jtk        -x awk -g "{print $4}"
   jtkACID:     -t jtk        -x awk -g "{print $5}"
-  jtkGRID:     -t jtk        -x awk -g "{print $6}" #same as JOBID (reported in the gps/krrregfiles)
+  jtkGRID:     -t jtk        -x awk -g "{print $6}" #same as JOBID (reported in the gps/krrreg)
   jtkstart:    -t jtk        -x awk -g "{print $12}"
   jtkduration: -t jtk        -x awk -g "{print $13}"
 
-  krrregGRID:  -t krrregfiles -x awk -g "BEGIN {FS='.'}; {print $2}"
-  krrobsEDID:  -t krrobsfiles -x awk -g "BEGIN {FS='.'}; {print $3}"
+  #NOTICE: this shows these IDs for the whole month, irrespective of -d
+  krrregGRID:  -t krrreg -x awk -g "BEGIN {FS='.'}; {print $2}"
+  krrregdate:  -t krrreg -x awk -g "BEGIN {FS='[_-.]'}; {print sprintf('20%02d-%02d-%02d',$11,$12,$13)}"
+  krrregargs:  -t krrreg -x awk -g "BEGIN {FS='[_-.]'}; {print sprintf('-D RL05_%02d-%02d -d %02d',$11,$12,$13)}"
+  krrobsEDID:  -t krrobs -x awk -g "BEGIN {FS='.'}; {print $3}"
+  krrobsdate:  -t krrobs -x awk -g "BEGIN {FS='[._]'}; {print $4}"
+  krrobsyear:  -t krrobs -x awk -g "BEGIN {FS='[.\-]'}; {print $2}"
+  krrobsargs:  -t krrobs -x awk -g "BEGIN {FS='[_-.]'};
+                                        /corral-tacc\/utexas\/csr/ {print '-y',$13-2000,'-m',$14,'-d',$15;};
+                                        /corral\/csr\/grace/     {print '-y',$11-2000,'-m',$12,'-d',$13};"
 
-  krrobsargs:  -t krrobsfiles -x awk -g "BEGIN {FS='[_-.]'}; {print '-y',$13-2000,'-m',$14,'-d',$15}"
-  krrregargs:  -t krrregfiles -x awk -g "BEGIN {FS='[_-.]'}; {print sprintf('-D RL05_%02d-%02d -d %02d',$11,$12,$13)}"
+  RL05date:    -t pts -x year+month+day
 
-
+  job_aesopJAID:  -t job_aesop -x jobid
 
   arclist:     -t pts        -x arc
   arcdate:                   -x jtkdate+jtkmjd+arclist
@@ -231,8 +287,18 @@ methodlist:
   ptsday:      -t pts -x day
   ptsdate:            -x ptsyear+ptsmonth+ptsday
 
+  #NOTICE: this fails when one arc has been removed from the regres step
   accattargs:  -t jtk -x year+jtkdoy+jtkstart+jtkduration+krrobsEDID
-  regresargs:  -t jtk -x year+jtkdoy+jtkACID+krrobsEDID            -r RL05
+
+  regresargs:  -t jtk -x year+jtkdoy+jtkACID+krrobsEDID -r RL05
+
+  nobs: -t resid -x nl
+
+
+
+#---------------------------------------------------------------------------------
+#NOTICE: these are methods that retrieve the various calibration parameters
+#---------------------------------------------------------------------------------
 
   # aakrep, GRACE-A
   grA.AC0X.aak:      -t aakrep -x grep -g "GRC-A    AC0X "

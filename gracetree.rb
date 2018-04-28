@@ -1,6 +1,5 @@
 #!/usr/bin/env ruby
 
-
 require 'yaml'
 require 'optparse'
 require 'pp'
@@ -67,7 +66,7 @@ class LibUtils
     if args[:return_string]
       return out
     else
-      puts out
+      LibUtils.stderr(out)
     end
   end
 
@@ -75,7 +74,10 @@ class LibUtils
     return x.ensure_array.sort_by {|e| e.split(/(\d+)/).map {|a| a =~ /\d+/ ? a.to_i : a }}
   end
 
-
+  def LibUtils.stderr(s)
+      $stderr.puts(s)
+      $stderr.flush
+  end
 end
 
 class GraceTree
@@ -186,15 +188,19 @@ class GraceTree
 
     out = OptionParser.new do |opts|
 
-      opts.banner = "Usage: #{File.basename(__FILE__)} -x COMMAND [options]"
+      opts.banner = "Usage: #{File.basename(__FILE__)} [options]"
       opts.separator ""
 
       opts.on("-p","--parameters-file PARFILE","File with parameters (default #{PARFILE}, i.e. in the same directory as #{File.basename(__FILE__)})") do |i|
         @parfile=String.new(i.to_s)
+        #append parameters
+        if File.exist?(@parfile)
+          @pars=@pars.merge(YAML.load_file(@parfile))
+        end
       end
       opts.on("-x","--execute COMMAND","Perform one (or more, using the COMMAND1+COMMAND2+...COMMANDN notation) "+
         "of the following operations "+
-        self.options_default_str("execute")+":\n#{GraceTree.valid_commands.join("\n")}") do |i|
+        self.options_default_str("execute")+":\n"+GraceTree.valid_commands.join(', ')+'.') do |i|
         @pars["execute"]=String.new(i.to_s)
       end
       opts.on("-R","--root ROOT","Index files below ROOT "+
@@ -261,8 +267,8 @@ class GraceTree
         self.options_default_str("reldate")+'.') do |i|
         @pars["reldate"]=String.new(i.to_s)
       end
-      opts.on("-t","--filetype FILETYPE","Gather files of type FILETYPE "+
-        self.options_default_str("filetype")+'.') do |i|
+      opts.on("-t","--filetype FILETYPE","Gather files of type FILETYPE, as defined in #{@parfile}: "+
+        self.options_default_str("filetype")+":\n"+@pars["filetypelist"].keys.join(', ')+'.') do |i|
         @pars["filetype"]=String.new(i.to_s)
       end
       opts.on("-g","--pattern PATTERN","Grep PATTERN from the files in SINK/FILETYPE "+
@@ -295,10 +301,17 @@ class GraceTree
       end
 
       opts.on_tail( '-h', '--help', 'Display this screen.' ) do
-        puts opts
+        LibUtils.stderr(opts)
+        LibUtils.stderr("\nExamples:
+        - gracetree.rb -m 5 -d 4 -t gpsgrvout -s A: shows all gps_reg_l/grcA_gpsgrv_*out files for 20*/05/04
+        - gracetree.rb -t gpsgrvout -x lsstr: shows the ls wildcarded filename of the gpsgrvout files
+        ")
         exit
       end
-      raise RuntimeError,"Directory #{pars["sink"]} does not exist, please create it." unless File.directory?(@pars["sink"])
+      unless File.directory?(@pars["sink"])
+        Dir.mkdir(@pars["sink"])
+        LibUtils.stderr("NOTICE: created directory #{@pars["sink"]}")
+      end
     end
     #parse it
     out.parse(argv)
@@ -320,9 +333,14 @@ class GraceTree
       end
     end
     #need command
-    if @pars["execute"].nil?
-      puts out
-      raise RuntimeError,"Need COMMAND."
+    if argv.length.zero?
+      LibUtils.stderr(out)
+      if File.exist?(@parfile)
+        LibUtils.stderr("(Default parameter file exists: #{@parfile})")
+      else
+        LibUtils.stderr("(Cannot find default parameter file: #{@parfile}")
+      end
+      exit 1
     end
 
     return out
@@ -488,6 +506,10 @@ class GraceTree
     @pars["filetypelist"]
   end
 
+  def xftl
+    @pars["filetypelist"].keys
+  end
+
   def xfiletype
     unless @deppars.has_key?(:filetype)
       raise RuntimeError,"Need FILETYPE." if @pars["filetype"].nil?
@@ -585,6 +607,7 @@ class GraceTree
       #build released solutions database
       @rsdb=Hash.new
       File.foreach(estimdirfile[0]) do |l|
+        mjd_stop_old=0
         LibUtils.peek(l,'line',@pars["debug"]||debug_here)
         a = l.split(' ');
         LibUtils.peek(a[8],'mjd start',@pars["debug"]||debug_here)
@@ -592,9 +615,13 @@ class GraceTree
         # y = a[1].sub('20','').to_i
         # m = Date::MONTHNAMES.index(a[2])
         #build dirname
-        dir=a[4].sub(@pars["root"]+"/",'').split('/iter')[0]+'/iter'
+        dir=a[4].sub(@pars["root"]+"/",'')
         dir.chop! if dir[-1..-1]=='/'
+        LibUtils.peek(dir,'dir',@pars["debug"]||debug_here)
         reldate=a[4].split('/')[7]
+        LibUtils.peek(reldate,'reldate',@pars["debug"]||debug_here)
+        #skip placeholders: if old stop date is later than current stop date or if current stop date is very large
+        next if mjd_stop_old > a[9].to_i || a[9].to_i>99999
         #loop over all days in this solution
         ((a[8].to_i+1)..a[9].to_i).each do |mjd|
           #build date
@@ -612,6 +639,7 @@ class GraceTree
           @rsdb[y][m][d]=dir
         end
         LibUtils.peek(a[9],'mjd stop',@pars["debug"]||debug_here)
+        mjd_stop_old=a[9]
       end
     when :init
       if File.exist?(dbfile)
@@ -632,10 +660,12 @@ class GraceTree
     reldate.split('_')[1].split('-')[1]
   end
 
+  #if @pars['reldate'] has the standard RL05_YY-MM, nothing happens
+  # otherwise retrieve the year and month from the non-standard RL05b_YY-MM
   def solution_date(d="15")
     raise RuntimeError,"Need valid YEAR and MONTH or RELEASE_DATE to retrieve the released solution." \
           if ( @pars['month'].to_i.zero? or @pars['year'].to_i.zero? ) && @pars['reldate']==DEFAULT[:reldate]
-    #transalate year
+    #transalate year (reldate is by default RL05_YY-MM, but some solutions from 6/2013 to 6/2014 are RL05b_YY-MM)
     if @pars['reldate']==DEFAULT[:reldate]
       y=@pars['year']
     else
@@ -658,6 +688,7 @@ class GraceTree
     #init output
     out=String.new
     begin
+      #start poking at even-spaced days along a month, to try to get the solution for this year/month
       ["15","7","21","4","11","18","25"].each do |d|
         y,m,d=solution_date(d)
         LibUtils.peek("20"+y+'-'+m+'-'+d,'today', @pars["debug"])
@@ -672,10 +703,11 @@ class GraceTree
       raise if out.nil?
     rescue
       y,m=solution_date
-      $stderr.puts "Could not find a released solution for 20#{y}/#{m}."
-      $stderr.flush
+      LibUtils.stderr("Could not find a released solution for 20#{y}/#{m}.")
       exit
     end
+    #the released_solution dir should have the 'solution_60' directory in it
+    out=`find #{@pars["root"]+"/"+out} -type d -name solution_60`.chomp.split('/solution_60')[0].sub(@pars["root"],'')
     #done
     return out
   end
@@ -910,7 +942,7 @@ class GraceTree
 
   def xcopy
     debug_here=false
-    `#{flock} mkdir -p #{xsink}`.chomp unless File.directory?(xsink)
+    `#{flock} mkdir -p #{xsink} 1>&2`.chomp unless File.directory?(xsink)
     LibUtils.peek(xlsstr,         "xlsstr",         @pars["debug"] || debug_here)
     LibUtils.peek(xfilename_quick,"xfilename_quick",@pars["debug"] || debug_here)
     #do not copy too many files
@@ -927,13 +959,11 @@ class GraceTree
         LibUtils.peek(File.mtime(fsink),"iter:mtime(fsink)}",@pars["debug"] || debug_here) unless File.size?(fsink).nil?
         out=`#{flock} rsync -aH --update --times --itemize-changes #{f} #{xsink} 1>&2`.chomp
         raise RuntimeError,"Failed to copy file #{f} to #{xsink}." unless $?.success?
-        puts out
         count+=1
       end
     end
     if count>0
-      $stderr.puts "Copied #{count} file(s) from:\n#{xlsstr}\nto:\n#{xsink}"
-      $stderr.flush
+      LibUtils.stderr("Copied #{count} file(s) from:\n#{xlsstr}\nto:\n#{xsink}")
     end
   end
 
@@ -975,6 +1005,16 @@ class GraceTree
     `#{xawkstr}`.split("\n")
   end
 
+  def xnlstr
+    out="wc -l #{xls_scratch.join(' ')}"
+    out+=" | head -n-1" if xls_scratch.length>1
+    return out
+  end
+
+  def xnl
+    xcopy if @pars["copy"]
+    `#{xnlstr}`.split("\n")
+  end
 
 end
 
