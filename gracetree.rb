@@ -442,6 +442,7 @@ class GraceTree
       'filename_quick',
       'filename',
       'released_solution',
+      'released_solution_literal',
       'sink',
       'findstr',
       'lsstr',
@@ -510,7 +511,8 @@ class GraceTree
     @pars["filetypelist"].keys
   end
 
-  def xfiletype
+  def xfiletype(args=Hash.new)
+    return args[:filetype] if args.has_key?(:filetype)
     unless @deppars.has_key?(:filetype)
       raise RuntimeError,"Need FILETYPE." if @pars["filetype"].nil?
       if xfiletypelist.has_key?(@pars["filetype"])
@@ -525,13 +527,19 @@ class GraceTree
 
   def xfilename_raw(args=Hash.new)
     args={
-      :filetype=>xfiletype,
+      :filetype=>xfiletype(args),
       :add_root=>true,
     }.merge(args)
     LibUtils.peek(args,'in:args',@pars["debug"])
     #build complete filename
     out=String.new
-    out+=@pars["root"]+"/" if args[:add_root]
+    if args[:add_root]
+      unless xfiletypelist[args[:filetype]]["rootdir"].nil?
+        out+=xfiletypelist[args[:filetype]]["rootdir"]+"/" 
+      else
+        out+=@pars["root"]+"/" 
+      end
+    end
     LibUtils.peek(xfiletypelist[args[:filetype]],'xfiletypelist[args[:filetype]]',@pars["debug"])
     out+=xfiletypelist[args[:filetype]]["subdir"]+'/' unless xfiletypelist[args[:filetype]]["subdir"].nil?
     ["prefix","infix","suffix"].each do |k|
@@ -590,6 +598,18 @@ class GraceTree
       end
     end
     @deppars[:particles]
+  end
+
+  def parse_krrreg(filename)
+    DateTime.strptime(File.basename(filename).split('_')[1],'%y-%m-%d').mjd.to_s
+  end
+
+  def xstart
+    [parse_krrreg(File.open(xls({:filetype => "krrreg"})[0]).to_a.first)]
+  end
+
+  def xstop
+    [parse_krrreg(File.open(xls({:filetype => "krrreg"})[0]).to_a.last)]
   end
 
   def released_solutions_io(op,dbfile=@pars["sink"]+'/'+DATABASE[:rs])
@@ -706,11 +726,15 @@ class GraceTree
       LibUtils.stderr("Could not find a released solution for 20#{y}/#{m}.")
       exit
     end
-    #the released_solution dir should have the 'solution_60' directory in it
-    out=`find #{@pars["root"]+"/"+out} -type d -name solution_60`.chomp.split('/solution_60')[0].sub(@pars["root"],'')
     #done
-    return out
+    return out.split('/iter')[0]+'/iter'
   end
+
+  def xreleased_solution_literal
+    #the released_solution dir should have the 'solution_60' directory in it
+    `find #{@pars["root"]}/#{xreleased_solution} -type d -name solution_60`.chomp.split('/solution_60')[0].sub(@pars["root"]+'/','')
+  end
+
 
   def get_particle(particle_name,args=Hash.new)
     debug_here=false
@@ -851,7 +875,7 @@ class GraceTree
     debug_here=false
     #by default, lsstr is built considering the requested filetype but that can be changed internally
     args={
-      :filetype=>xfiletype
+      :filetype=>xfiletype(args)
     }.merge(args)
     LibUtils.peek(args,'in:args',@pars["debug"] || debug_here)
     from_particles=xfrom_particles(args)

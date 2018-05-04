@@ -59,9 +59,9 @@ filetypelist:
     infix: _20YEAR-MONTH-DAY_RL61_GPSRL62_RL05.JOBID
     suffix: .inp
   gpsgrvscript:
-    subdir: grace/YEAR/MONTH/gps_orb_l
-    prefix: grc_gps_orb
-    infix: _20YEAR-MONTH-DAY_RL61_GPSRL62_RL05.JOBID
+    subdir: grace/YEAR/MONTH/gps_reg_l
+#    prefix: grc_gps_orb
+#    infix: _20YEAR-MONTH-DAY_RL61_GPSRL62_RL05.JOBID
     suffix: .script
   jtk:
     subdir: grace/YEAR/monitor_l
@@ -146,7 +146,8 @@ filetypelist:
 #NOTICE: these files depend on the <released_solution>, so -D must be given (and preferably NOT -y and -m)
 #---------------------------------------------------------------------------------
   estimdir:
-    subdir: grace/aux
+    # subdir: grace/aux
+    rootdir: /home1/00767/byaa676
     prefix: EstimDirs_
     suffix: RL05
   #this is needed in order to provide the wildcarded version of the <released_solution> methods
@@ -203,7 +204,7 @@ filetypelist:
     infix: _YEAR-MONTH-DAY_RL61_62_RL05.JOBID.
     suffix: resid
   geo60:
-    subdir: <released_solution>/solution_60
+    subdir: <released_solution_literal>/solution_60
     prefix: GEO
     infix: .
     suffix: JOBID
