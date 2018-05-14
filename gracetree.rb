@@ -993,8 +993,10 @@ class GraceTree
 
   def xgrepstr
     raise RuntimeError,"Need PATTERN." if pars["pattern"].nil?
+    file_list=xls_scratch.join(' ')
+    raise RuntimeError,"Found no files with name #{xfilename}." if file_list.empty?
     #NOTICE: never user --no-filename with grep because the sorting is done at the level of the filename, so that the retrieved data remains aligned
-    "for file in #{xls_scratch.join(' ')}; do "+
+    "for file in #{file_list}; do "+
       "[ -s $file ] && "+
       "echo $file: $(grep '#{pars["pattern"]}' $file || echo '#{pars["pattern"]}'); "+
     "done"
@@ -1021,7 +1023,9 @@ class GraceTree
 
   def xawkstr
     raise RuntimeError,"Need PATTERN." if pars["pattern"].nil?
-    "awk '#{pars["pattern"].gsub("'",'"')}' #{xls_scratch.join(' ')}"
+    file_list=xls_scratch.join(' ')
+    raise RuntimeError,"Found no files with name #{xfilename}." if file_list.empty?
+    "awk '#{pars["pattern"].gsub("'",'"')}' #{file_list}"
   end
 
   def xawk
