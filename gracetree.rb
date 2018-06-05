@@ -263,7 +263,7 @@ class GraceTree
         self.options_default_str("release")+'.') do |i|
         @pars["release"]=String.new(i.to_s)
       end
-      opts.on("-D","--reldate RELEASE_DATE","Replace the placeholder '#{PLACEHOLDER[:reldate]}' in PREFIX, INFIX or SUFFIX with this value "+
+      opts.on("-D","--reldate RELEASE_DATE","Replace the placeholder '#{PLACEHOLDER[:reldate]}' in PREFIX, INFIX or SUFFIX with this value (e.g. RL05_17-01"+
         self.options_default_str("reldate")+'.') do |i|
         @pars["reldate"]=String.new(i.to_s)
       end
