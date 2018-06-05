@@ -43,6 +43,11 @@ filetypelist:
     prefix: grc_acc+att_orb
     infix: _20YEAR-MONTH-DAY_RL61_GPSRL62_RL05.JOBID
     suffix: .script
+  acc+attlog:
+    subdir: grace/YEAR/MONTH/conv_orb_l
+    prefix: grc_acc+att_orb
+    infix: _20YEAR-MONTH-DAY_RL61_GPSRL62_RL05.JOBID
+    suffix: .out
   gpsgrvrep:
     subdir: grace/YEAR/MONTH/gps_reg_l
     prefix: grcSAT_gpsgrv
@@ -60,9 +65,29 @@ filetypelist:
     suffix: .inp
   gpsgrvscript:
     subdir: grace/YEAR/MONTH/gps_reg_l
-#    prefix: grc_gps_orb
+#    prefix: grc_grav
 #    infix: _20YEAR-MONTH-DAY_RL61_GPSRL62_RL05.JOBID
     suffix: .script
+  gpsgrvlog:
+    subdir: grace/YEAR/MONTH/gps_reg_l
+    prefix: grc_grav
+    infix: _20YEAR-MONTH-DAY_RL61_62_RL05.JOBID
+    suffix: .out
+  sstgrvrep:
+    subdir: grace/YEAR/MONTH/kbr_reg_l
+    prefix: grc_sstgrv_rrate
+    infix: _20YEAR-MONTH-DAY_RL61_GPSRL62_RL05.JOBID
+    suffix: .rep
+  sstgrvout:
+    subdir: grace/YEAR/MONTH/kbr_reg_l
+    prefix: grc_sstgrv_rrate
+    infix: _20YEAR-MONTH-DAY_RL61_GPSRL62_RL05.JOBID
+    suffix: .out
+  sstgrvinp:
+    subdir: grace/YEAR/MONTH/kbr_reg_l
+    prefix: grc_sstgrv_rrate
+    infix: _20YEAR-MONTH-DAY_RL61_GPSRL62_RL05.JOBID
+    suffix: .inp   
   jtk:
     subdir: grace/YEAR/monitor_l
     prefix: grcgrv_jtk
@@ -146,8 +171,8 @@ filetypelist:
 #NOTICE: these files depend on the <released_solution>, so -D must be given (and preferably NOT -y and -m)
 #---------------------------------------------------------------------------------
   estimdir:
-    # subdir: grace/aux
-    rootdir: /home1/00767/byaa676
+    subdir: grace/aux
+    #rootdir: /home1/00767/byaa676
     prefix: EstimDirs_
     suffix: RL05
   #this is needed in order to provide the wildcarded version of the <released_solution> methods
@@ -197,6 +222,22 @@ filetypelist:
   job_aesop:
     subdir: <released_solution>/..
     prefix: job_Aesop_RL05.
+    suffix: JOBID
+  aesopinp60:
+    subdir: <released_solution>/solution_60
+    prefix: INPUT.
+    suffix: JOBID
+  aesopinp120:
+    subdir: <released_solution>/solution_120
+    prefix: INPUT.
+    suffix: JOBID
+  aesopinp:
+    subdir: <released_solution>/solution
+    prefix: INPUT.
+    suffix: JOBID
+  aesopout:
+    subdir: <released_solution>/../
+    prefix: Aesop_RL05.out.
     suffix: JOBID
   resid:
     subdir: <released_solution>/postfit
