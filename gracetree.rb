@@ -149,7 +149,8 @@ class GraceTree
       "copy"                => true,
       "copylimit"           => 1000,
       "argv"                => argv,
-      "debug"               => false
+      "debug"               => false,
+      "hardlinkdir"         => '.'
     }
     #get input arguments and replace default parameters
     self.options(argv)
@@ -288,13 +289,17 @@ class GraceTree
         @pars["clean-grep"]=i
       end
       opts.on("-C","--[no-]copy","Copy files before grepping/awking "+
-        self.options_default_str("clean-grep")+'.') do |i|
+        self.options_default_str("copy")+'.') do |i|
         @pars["copy"]=i
       end
       opts.on("-L","--copy-limit COPY_LIMIT","Do not copy more than COPY_LIMIT files to $SCRATCH "+
-        self.options_default_str("copy-limit")+'.') do |i|
+        self.options_default_str("copylimit")+'.') do |i|
         @pars["copylimit"]=i.to_i
       end
+      opts.on("-l","--hard-link-dir HARDLINK_DIR","Create hard link to this dir; make sure it's in the same volume as SINK, currently #{@pars["sink"]} "+
+        self.options_default_str("hardlinkdir")+'.') do |i|
+        @pars["hardlinkdir"]=String.new(i.to_s)
+      end      
       opts.on("-?","--[no-]debug","Turn on debug mode "+
         self.options_default_str("debug",' and makes output very verbose!')+'.') do |i|
         @pars["debug"]=i
@@ -974,6 +979,7 @@ class GraceTree
     raise RuntimeError,"May need to copy #{xls.length} files, which is above the COPY_LIMIT (#{@pars["copylimit"]})." if xls.length>@pars["copylimit"]
     count=0
     fsink=String.new
+    out=Array.new
     xls.each do |f|
       fsink=xsink+'/'+File.basename(f)
       LibUtils.peek(f,    "iter:f",    @pars["debug"] || debug_here)
@@ -982,13 +988,15 @@ class GraceTree
         LibUtils.peek(File.mtime(f),    "iter:mtime(f)",    @pars["debug"] || debug_here)
         LibUtils.peek(File.mtime(fsink),"iter:mtime(fsink)}",@pars["debug"] || debug_here) unless File.size?(fsink).nil?
         out=`#{flock} rsync -aH --update --times --itemize-changes #{f} #{xsink} 1>&2`.chomp
-        raise RuntimeError,"Failed to copy file #{f} to #{xsink}." unless $?.success?
+        raise RuntimeError,"Failed to copy file #{f} to #{xsink}:\n#{out}" unless $?.success?
         count+=1
       end
+      out.push(fsink)
     end
     if count>0
       LibUtils.stderr("Copied #{count} file(s) from:\n#{xlsstr}\nto:\n#{xsink}")
     end
+    return out
   end
 
   def xgrepstr
@@ -1042,6 +1050,22 @@ class GraceTree
   def xnl
     xcopy if @pars["copy"]
     `#{xnlstr}`.split("\n")
+  end
+
+  def xln
+    linksink=File.expand_path(@pars["hardlinkdir"])
+    Dir.mkdir(linksink) unless File.directory?(linksink)
+    xcopy
+    filesink=xsink
+    out=Array.new
+    xls.each do |f|
+      unless File.exist?(linksink+"/"+File.basename(f))
+        com=`#{flock} ln -t #{linksink} #{filesink}/#{File.basename(f)} 1>&2`.chomp
+        raise RuntimeError,"Failed to ln file #{f} to #{linksink}:\n#{com}" unless $?.success?
+      end
+      out.push(linksink+"/"+File.basename(f))
+    end
+    return out
   end
 
 end
