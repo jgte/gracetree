@@ -93,7 +93,8 @@ class GraceTree
     :reldate=> 'RELDATE',
     :jobid  => 'JOBID',
     :arc    => 'ARC',
-    :sat    => 'SAT'
+    :sat    => 'SAT',
+    :version=> 'VERSION',
   }
   PLACEHOLDER_REGEXP={
     :year   => '\d\d',
@@ -104,25 +105,27 @@ class GraceTree
     :reldate=> 'RL\d\d[a-z]?_\d\d-\d\d',
     :jobid  => '\d+',
     :arc    => '\d+',
-    :sat    => '[AB]'
+    :sat    => '[AB]',
+    :version=> '*',
   }
 
   DEFAULT={
-    :release=>'*',
-    :reldate=>'*',
-    :jobid => '*',
-    :arc   => '*',
-    :sat   => '[AB]',
     :year  => '[0-9][0-9]',
     :month => '[0-9][0-9]',
     :day   => '[0-9][0-9]',
     :doy   => '[0-9][0-9][0-9]',
+    :release=>'RL05', #this cannot be a wildcard, since the name of the database depends on it
+    :reldate=>'*',
+    :jobid => '*',
+    :arc   => '*',
+    :sat   => '[AB]',
+    :version=> '*',
   }
   DATABASE={
     :rs => "released_solutions.database",
   }
   PARTICLE_LIST=[
-    "year","month","day","jobid","sat","arc","release","reldate","doy"
+    "year","month","day","jobid","sat","arc","release","reldate","doy","version"
   ]
 
 
@@ -132,6 +135,7 @@ class GraceTree
     #default parameters for this run
     @pars={
       "execute"             => nil,
+      "execute-option"      => nil,
       "root"                => nil,
       "sink"                => ENV["SCRATCH"]+"/gracetree",
       "year"                => DEFAULT[:year],
@@ -143,6 +147,8 @@ class GraceTree
       "jobid"               => DEFAULT[:jobid],
       "arc"                 => DEFAULT[:arc],
       "sat"                 => DEFAULT[:sat],
+      "version"             => DEFAULT[:version],
+      "subdir"              => nil,
       "filetype"            => nil,
       "pattern"             => nil,
       "clean-grep"          => false,
@@ -150,7 +156,10 @@ class GraceTree
       "copylimit"           => 1000,
       "argv"                => argv,
       "debug"               => false,
-      "hardlinkdir"         => '.'
+      "hardlinkdir"         => '.',
+      "hardlinkname"        => nil,
+      "flock"               => ENV["SCRATCH"]+"/.lock/main",
+      "breakifempty"        => false,
     }
     #get input arguments and replace default parameters
     self.options(argv)
@@ -204,11 +213,16 @@ class GraceTree
         self.options_default_str("execute")+":\n"+GraceTree.valid_commands.join(', ')+'.') do |i|
         @pars["execute"]=String.new(i.to_s)
       end
+      opts.on("-X","--execute-option COM_OPTION","COMMAND-specific option, possibilities are:\n"+
+        "COMMAND par: COM_OPTION is the name of a parameter\n"+
+        self.options_default_str("execute-option")+'.') do |i|
+        @pars["execute-option"]=String.new(i.to_s)
+      end
       opts.on("-R","--root ROOT","Index files below ROOT "+
         self.options_default_str("root")+'.') do |i|
         @pars["root"]=File.expand_path(String.new(i.to_s))
       end
-      opts.on("-S","--sink SINK","Copy files to SINK/FILETYPE "+
+      opts.on("-S","--sink SINK","Copy files to SINK "+
         self.options_default_str("sink",", i.e. $SCRATCH/gracetree")+'.') do |i|
         @pars["sink"]=File.expand_path(String.new(i.to_s))
       end
@@ -264,9 +278,17 @@ class GraceTree
         self.options_default_str("release")+'.') do |i|
         @pars["release"]=String.new(i.to_s)
       end
-      opts.on("-D","--reldate RELEASE_DATE","Replace the placeholder '#{PLACEHOLDER[:reldate]}' in PREFIX, INFIX or SUFFIX with this value (e.g. RL05_17-01"+
+      opts.on("-D","--reldate RELEASE_DATE","Replace the placeholder '#{PLACEHOLDER[:reldate]}' in PREFIX, INFIX or SUFFIX with this value, e.g. RL05_17-01 "+
         self.options_default_str("reldate")+'.') do |i|
         @pars["reldate"]=String.new(i.to_s)
+      end
+      opts.on("-V","--version VERSION","Replace the placeholder '#{PLACEHOLDER[:version]}' in PREFIX, INFIX or SUFFIX with this value, e.g. RL61_GPSRL62 "+
+        self.options_default_str("version")+'.') do |i|
+        @pars["version"]=String.new(i.to_s)
+      end
+      opts.on("-v","--sub-dir SUBDIR","Append SUBDIR to the end of the 'subdir:' entry "+
+        self.options_default_str("subdir")+'.') do |i|
+        @pars["subdir"]=String.new(i.to_s)
       end
       opts.on("-t","--filetype FILETYPE","Gather files of type FILETYPE, as defined in #{@parfile}: "+
         self.options_default_str("filetype")+":\n"+@pars["filetypelist"].keys.join(', ')+'.') do |i|
@@ -299,12 +321,23 @@ class GraceTree
       opts.on("-l","--hard-link-dir HARDLINK_DIR","Create hard link to this dir; make sure it's in the same volume as SINK, currently #{@pars["sink"]} "+
         self.options_default_str("hardlinkdir")+'.') do |i|
         @pars["hardlinkdir"]=String.new(i.to_s)
-      end      
+      end
+      opts.on("-n","--hard-link-name HARDLINK_NAME","Create hard link with this name "+
+        self.options_default_str("hardlinkname")+'.') do |i|
+        @pars["hardlinkname"]=String.new(i.to_s)
+      end
+      opts.on("-F","--flock-file FLOCK_FILE","Use this file as lock for io-intensive operations "+
+        self.options_default_str("flock")+'.') do |i|
+        @pars["flock"]=String.new(i.to_s)
+      end
+      opts.on("-B","--[no-]break-if-empty","Break execution if no file is found "+
+        self.options_default_str("breakifempty")+'.') do |i|
+        @pars["breakifempty"]=i
+      end
       opts.on("-?","--[no-]debug","Turn on debug mode "+
         self.options_default_str("debug",' and makes output very verbose!')+'.') do |i|
         @pars["debug"]=i
       end
-
       opts.on_tail( '-h', '--help', 'Display this screen.' ) do
         LibUtils.stderr(opts)
         LibUtils.stderr("\nExamples:
@@ -424,6 +457,10 @@ class GraceTree
         pp out
       end
     end
+  end
+
+  def xpar(parname=@pars["execute-option"])
+    @pars[parname]
   end
 
   def xprint
@@ -547,6 +584,7 @@ class GraceTree
     end
     LibUtils.peek(xfiletypelist[args[:filetype]],'xfiletypelist[args[:filetype]]',@pars["debug"])
     out+=xfiletypelist[args[:filetype]]["subdir"]+'/' unless xfiletypelist[args[:filetype]]["subdir"].nil?
+    out+=@pars["subdir"]+'/' unless @pars["subdir"].nil?
     ["prefix","infix","suffix"].each do |k|
       out+=xfiletypelist[args[:filetype]][k] unless xfiletypelist[args[:filetype]][k].nil?
     end
@@ -582,7 +620,14 @@ class GraceTree
     #replace placeholders with requested filename parts
     PARTICLE_LIST.map{|p| p.to_sym}.each do |k|
       LibUtils.peek(k,'iter:k',@pars["debug"] || debug_here)
-      out=out.gsub(PLACEHOLDER[k],particles[k.to_s].to_s) unless particles[k.to_s].nil?
+      unless particles[k.to_s].nil?
+        case k
+        when :release
+          out=out.gsub(PLACEHOLDER[k],particles[k.to_s].to_s.sub(/[UD]D/,'')) 
+        else
+          out=out.gsub(PLACEHOLDER[k],particles[k.to_s].to_s) 
+        end
+      end
       LibUtils.peek(out,'iter:out',@pars["debug"] || debug_here)
     end
     return out
@@ -617,7 +662,7 @@ class GraceTree
     [parse_krrreg(File.open(xls({:filetype => "krrreg"})[0]).to_a.last)]
   end
 
-  def released_solutions_io(op,dbfile=@pars["sink"]+'/'+DATABASE[:rs])
+  def released_solutions_io(op,dbfile=@pars["sink"]+'/'+DATABASE[:rs]+'.'+@pars["release"])
     debug_here=false
     LibUtils.peek(dbfile,'dbfile',@pars["debug"]||debug_here)
     case op
@@ -627,7 +672,7 @@ class GraceTree
       File.open(dbfile,'w') {|f| f.write(@rsdb.to_yaml)}
     when :build
       #get file with solution list
-      estimdirfile=GraceTree.new(['-t','estimdir']).xfind
+      estimdirfile=GraceTree.new(['-t','estimdir','-r',@pars["release"]]).xfind
       raise RuntimeError,"Expecting the EstimDirs file to be one, not #{estimdirfile.length}." unless estimdirfile.length==1
       #build released solutions database
       @rsdb=Hash.new
@@ -643,7 +688,7 @@ class GraceTree
         dir=a[4].sub(@pars["root"]+"/",'')
         dir.chop! if dir[-1..-1]=='/'
         LibUtils.peek(dir,'dir',@pars["debug"]||debug_here)
-        reldate=a[4].split('/')[7]
+        reldate=a[4].split('/').find { |i| /RL\d\d/ =~ i }
         LibUtils.peek(reldate,'reldate',@pars["debug"]||debug_here)
         #skip placeholders: if old stop date is later than current stop date or if current stop date is very large
         next if mjd_stop_old > a[9].to_i || a[9].to_i>99999
@@ -679,17 +724,21 @@ class GraceTree
   end
 
   def solution_year(reldate=@pars['reldate'])
+    # LibUtils.peek(reldate,'reldate',@pars["debug"]||debug_here)
     reldate.split('_')[1].split('-')[0]
   end
   def solution_month(reldate=@pars['reldate'])
     reldate.split('_')[1].split('-')[1]
   end
 
+  def invalid_solution_date
+    ( @pars['month'].to_i.zero? or @pars['year'].to_i.zero? ) && @pars['reldate']==DEFAULT[:reldate]
+  end
+
   #if @pars['reldate'] has the standard RL05_YY-MM, nothing happens
   # otherwise retrieve the year and month from the non-standard RL05b_YY-MM
   def solution_date(d="15")
-    raise RuntimeError,"Need valid YEAR and MONTH or RELEASE_DATE to retrieve the released solution." \
-          if ( @pars['month'].to_i.zero? or @pars['year'].to_i.zero? ) && @pars['reldate']==DEFAULT[:reldate]
+    raise RuntimeError,"Need valid YEAR and MONTH or RELEASE_DATE to retrieve the released solution." if invalid_solution_date
     #transalate year (reldate is by default RL05_YY-MM, but some solutions from 6/2013 to 6/2014 are RL05b_YY-MM)
     if @pars['reldate']==DEFAULT[:reldate]
       y=@pars['year']
@@ -926,7 +975,7 @@ class GraceTree
   end
 
   def flock
-    return "flock #{ENV["SCRATCH"]}/gracetree/lock"
+    return "flock #{@pars["flock"]}"
   end
 
   def xls(args=Hash.new)
@@ -935,7 +984,6 @@ class GraceTree
     lsstr=xlsstr(args)
     LibUtils.peek(lsstr,'lsstr',@pars["debug"] || debug_here)
     #cache results for later use
-    out=String.new
     if @deppars.has_key?(lsstr)
       out=@deppars[lsstr]
       LibUtils.peek(nil,'loaded from cache',@pars["debug"] || debug_here)
@@ -947,31 +995,45 @@ class GraceTree
       LibUtils.peek(nil,'saved into cache',@pars["debug"] || debug_here)
     end
     LibUtils.peek(out,'out',@pars["debug"] || debug_here)
+    raise RuntimeError,"Could not find any file matching #{lsstr}" if @pars["breakifempty"] && out.length==0
     return out
+  end
+
+  def robust_year_month
+    if invalid_solution_date
+       @pars['year'].to_i.zero? ? y="NA" : y=@pars['year']
+      @pars['month'].to_i.zero? ? m="NA" : m=@pars['month']
+    else
+      y,m=solution_date
+    end
+    return y,m
   end
 
   def xsink(base=@pars["sink"])
     debug_here=false
     unless @deppars.has_key?(:sink)
-      y,m=solution_date
-      LibUtils.peek(y,'in:y',@pars["debug"] || debug_here)
-      LibUtils.peek(m,'in:m',@pars["debug"] || debug_here)
-      LibUtils.peek(@pars["year"],'in:@pars["year"]',@pars["debug"] || debug_here)
-      LibUtils.peek(@pars["month"],'in:@pars["month"]',@pars["debug"] || debug_here)
-      @deppars[:sink] = base+'/'+@pars["filetype"]+'/'+y+'/'+m
+      # y,m=robust_year_month
+      # LibUtils.peek(y,'in:y',@pars["debug"] || debug_here)
+      # LibUtils.peek(m,'in:m',@pars["debug"] || debug_here)
+      # LibUtils.peek(@pars["year"],'in:@pars["year"]',@pars["debug"] || debug_here)
+      # LibUtils.peek(@pars["month"],'in:@pars["month"]',@pars["debug"] || debug_here)
+      @deppars[:sink] = base+'/'+@pars["filetype"]#+'/'+y+'/'+m
     else
       @deppars[:sink]
     end
   end
 
+  def fsink(f)
+    f.sub(@pars["root"],xsink)
+  end
+
   def xls_scratch(args=Hash.new)
     LibUtils.peek(args,'in:args',@pars["debug"])
-    xls.each.map{ |f| xsink+'/'+File.basename(f) }
+    xls.each.map{ |f| fsink(f) }
   end
 
   def xcopy
     debug_here=false
-    `#{flock} mkdir -p #{xsink} 1>&2`.chomp unless File.directory?(xsink)
     LibUtils.peek(xlsstr,         "xlsstr",         @pars["debug"] || debug_here)
     LibUtils.peek(xfilename_quick,"xfilename_quick",@pars["debug"] || debug_here)
     #do not copy too many files
@@ -981,14 +1043,16 @@ class GraceTree
     fsink=String.new
     out=Array.new
     xls.each do |f|
-      fsink=xsink+'/'+File.basename(f)
+      fsink=fsink(f)
+      dsink=File.dirname(fsink)
+      `#{flock} mkdir -p #{dsink} 1>&2`.chomp unless File.directory?(dsink)
       LibUtils.peek(f,    "iter:f",    @pars["debug"] || debug_here)
       LibUtils.peek(fsink,"iter:fsink",@pars["debug"] || debug_here)
       if File.size?(fsink).nil? || File.mtime(fsink) < File.mtime(f)
         LibUtils.peek(File.mtime(f),    "iter:mtime(f)",    @pars["debug"] || debug_here)
         LibUtils.peek(File.mtime(fsink),"iter:mtime(fsink)}",@pars["debug"] || debug_here) unless File.size?(fsink).nil?
-        out=`#{flock} rsync -aH --update --times --itemize-changes #{f} #{xsink} 1>&2`.chomp
-        raise RuntimeError,"Failed to copy file #{f} to #{xsink}:\n#{out}" unless $?.success?
+        o=`#{flock} rsync -aH --update --times --itemize-changes #{f} #{dsink} 1>&2`.chomp
+        raise RuntimeError,"Failed to copy file #{f} to #{dsink}:\n#{o}" unless $?.success?
         count+=1
       end
       out.push(fsink)
@@ -1054,16 +1118,26 @@ class GraceTree
 
   def xln
     linksink=File.expand_path(@pars["hardlinkdir"])
-    Dir.mkdir(linksink) unless File.directory?(linksink)
-    xcopy
-    filesink=xsink
+    `#{flock} mkdir -p #{linksink} 1>&2`.chomp unless File.directory?(linksink)
+    LibUtils.peek(linksink,'linksink',@pars["debug"])
     out=Array.new
-    xls.each do |f|
-      unless File.exist?(linksink+"/"+File.basename(f))
-        com=`#{flock} ln -t #{linksink} #{filesink}/#{File.basename(f)} 1>&2`.chomp
-        raise RuntimeError,"Failed to ln file #{f} to #{linksink}:\n#{com}" unless $?.success?
+    xcopy.each do |f|
+      if @pars["hardlinkname"].nil?
+        linkname=linksink+"/"+File.basename(f)
+      else
+        linkname=linksink+"/"+@pars["hardlinkname"]
+        unless out.length==0
+          #delete previously linked file ('out' for sure already had length zero)
+          File.delete(linkname)
+          raise RuntimeError,"Cannot handle multiple link targets if HARDLINK_NAME is given" 
+        end
       end
-      out.push(linksink+"/"+File.basename(f))
+      LibUtils.peek(linkname,'linkname',@pars["debug"])
+      unless File.exist?(linkname)
+        com=`#{flock} ln #{f} #{linkname} 1>&2`.chomp
+        raise RuntimeError,"Failed to ln file #{f} to #{linkname}:\n#{com}" unless $?.success?
+      end
+      out.push(linkname)
     end
     return out
   end
