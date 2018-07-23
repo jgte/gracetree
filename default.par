@@ -200,6 +200,7 @@ filetypelist:
     prefix: grace
     infix: .20YEAR-MONTH-DAY_SAT_VERSION.
     suffix: acc.pre
+    dbgrab: ~byaa676/grab_acc_l1b.py
   attpre:
     subdir: grace/YEAR/att/dat
     prefix: grace
@@ -375,7 +376,7 @@ filetypelist:
 #14-19: same as previous 6 columns for GRACE B
     subdir: <released_solution>/latlon_postfit
     prefix: krr
-    infix: _YEAR-MONTH-DAY_VERSION_RELEASE.JOBID.
+    infix: _YEAR-MONTH-DAY_VERSION[-_]RELEASE.JOBID.
     suffix: resid.latlon
   geo60:
     subdir: <released_solution_literal>/solution_60

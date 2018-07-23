@@ -78,6 +78,10 @@ class LibUtils
       $stderr.puts(s)
       $stderr.flush
   end
+
+  def LibUtils.utc2gps(utc)
+    return (utc-Time.utc(2000,1,1,12,0,0,0)).to_i
+  end
 end
 
 class GraceTree
@@ -148,7 +152,7 @@ class GraceTree
       "arc"                 => DEFAULT[:arc],
       "sat"                 => DEFAULT[:sat],
       "version"             => DEFAULT[:version],
-      "subdir"              => nil,
+      "subdir"           => nil,
       "filetype"            => nil,
       "pattern"             => nil,
       "clean-grep"          => false,
@@ -214,7 +218,8 @@ class GraceTree
         @pars["execute"]=String.new(i.to_s)
       end
       opts.on("-X","--execute-option COM_OPTION","COMMAND-specific option, possibilities are:\n"+
-        "COMMAND par: COM_OPTION is the name of a parameter\n"+
+        "if COMMAND == par     -> COM_OPTION is the name of a parameter\n"+
+        "if COMMAND == element -> COM_OPTION is the name of a element\n"+
         self.options_default_str("execute-option")+'.') do |i|
         @pars["execute-option"]=String.new(i.to_s)
       end
@@ -226,7 +231,7 @@ class GraceTree
         self.options_default_str("sink",", i.e. $SCRATCH/gracetree")+'.') do |i|
         @pars["sink"]=File.expand_path(String.new(i.to_s))
       end
-      opts.on("-y","--year YEAR","Replace the placeholder '#{PLACEHOLDER[:year]}' in SUBIR or INFIX with this value "+
+      opts.on("-y","--year YEAR","Replace the placeholder '#{PLACEHOLDER[:year]}' in subdir: or infix: with this value "+
         self.options_default_str("year")+'.') do |i|
         #only consider the first -y/--year and ignore everything else
         if @pars["year"] == DEFAULT[:year]
@@ -243,7 +248,7 @@ class GraceTree
           end
         end
       end
-      opts.on("-m","--month MONTH","Replace the placeholder '#{PLACEHOLDER[:month]}' in SUBIR or INFIX with this value "+
+      opts.on("-m","--month MONTH","Replace the placeholder '#{PLACEHOLDER[:month]}' in subdir: or infix: elements with this value "+
         self.options_default_str("month")+'.') do |i|
         #only consider the first -m/--month and ignore everything else
         if @pars["month"] == DEFAULT[:month]
@@ -254,7 +259,7 @@ class GraceTree
           end
         end
       end
-      opts.on("-d","--day DAY","Replace the placeholder '#{PLACEHOLDER[:day]}' in SUBIR or INFIX with this value "+
+      opts.on("-d","--day DAY","Replace the placeholder '#{PLACEHOLDER[:day]}' in subdir: or infix: elements with this value "+
         self.options_default_str("day")+'.') do |i|
         begin
           @pars["day"]=String.new("%02d" % i.to_s)
@@ -262,7 +267,7 @@ class GraceTree
           @pars["day"]=String.new(i.to_s)
         end
       end
-      opts.on("-o","--doy DOY","Replace the placeholder '#{PLACEHOLDER[:doy]}' in SUBIR or INFIX with this value "+
+      opts.on("-o","--doy DOY","Replace the placeholder '#{PLACEHOLDER[:doy]}' in subdir: or infix: elements with this value "+
         self.options_default_str("doy")+'.') do |i|
         begin
           @pars["doy"]=String.new("%03d" % i.to_s)
@@ -270,23 +275,23 @@ class GraceTree
           @pars["doy"]=String.new(i.to_s)
         end
       end
-      opts.on("-j","--jobid JOBID","Replace the placeholder '#{PLACEHOLDER[:jobid]}' in PREFIX, INFIX or SUFFIX with this value "+
+      opts.on("-j","--jobid JOBID","Replace the placeholder '#{PLACEHOLDER[:jobid]}' in :prefix, infix: or suffix: elements with this value "+
         self.options_default_str("jobid")+'.') do |i|
         @pars["jobid"]=String.new(i.to_s)
       end
-      opts.on("-r","--release RELEASE","Replace the placeholder '#{PLACEHOLDER[:release]}' in PREFIX, INFIX or SUFFIX with this value "+
+      opts.on("-r","--release RELEASE","Replace the placeholder '#{PLACEHOLDER[:release]}' in :prefix, infix: or suffix: elements with this value "+
         self.options_default_str("release")+'.') do |i|
         @pars["release"]=String.new(i.to_s)
       end
-      opts.on("-D","--reldate RELEASE_DATE","Replace the placeholder '#{PLACEHOLDER[:reldate]}' in PREFIX, INFIX or SUFFIX with this value, e.g. RL05_17-01 "+
+      opts.on("-D","--reldate RELEASE_DATE","Replace the placeholder '#{PLACEHOLDER[:reldate]}' in :prefix, infix: or suffix: elements with this value, e.g. RL05_17-01 "+
         self.options_default_str("reldate")+'.') do |i|
         @pars["reldate"]=String.new(i.to_s)
       end
-      opts.on("-V","--version VERSION","Replace the placeholder '#{PLACEHOLDER[:version]}' in PREFIX, INFIX or SUFFIX with this value, e.g. RL61_GPSRL62 "+
+      opts.on("-V","--version VERSION","Replace the placeholder '#{PLACEHOLDER[:version]}' in :prefix, infix: or suffix: elements with this value, e.g. RL61_GPSRL62 "+
         self.options_default_str("version")+'.') do |i|
         @pars["version"]=String.new(i.to_s)
       end
-      opts.on("-v","--sub-dir SUBDIR","Append SUBDIR to the end of the 'subdir:' entry "+
+      opts.on("-v","--sub-dir SUBDIR","Append SUBDIR to the end of the subdir: element "+
         self.options_default_str("subdir")+'.') do |i|
         @pars["subdir"]=String.new(i.to_s)
       end
@@ -298,11 +303,11 @@ class GraceTree
         self.options_default_str("pattern")+'.') do |i|
         @pars["pattern"]=String.new(i.to_s)
       end
-      opts.on("-a","--arc ARC","Replace the placeholder '#{PLACEHOLDER[:arc]}' in INFIX with this value "+
+      opts.on("-a","--arc ARC","Replace the placeholder '#{PLACEHOLDER[:arc]}' in infix: element with this value "+
         self.options_default_str("arc")+'.') do |i|
         @pars["arc"]=String.new(i.to_s)
       end
-      opts.on("-s","--satellite SAT","Replace the placeholder '#{PLACEHOLDER[:sat]}' in PREFIX, INFIX or SUFFIX with this value "+
+      opts.on("-s","--satellite SAT","Replace the placeholder '#{PLACEHOLDER[:sat]}' in :prefix, infix: or suffix: elements with this value "+
         self.options_default_str("sat")+'.') do |i|
         @pars["sat"]=String.new(i.to_s)
       end
@@ -567,26 +572,39 @@ class GraceTree
     @deppars[:filetype]
   end
 
+  def xelement(name=@pars["execute-option"],ft=xfiletype)
+    LibUtils.peek(name,'in:name',@pars["debug"])
+    LibUtils.peek(ft,'in:ft',@pars["debug"])
+    if name.nil?
+      LibUtils.peek(xfiletypelist[ft],'xfiletypelist[ft]',@pars["debug"])
+      xfiletypelist[ft]
+    else
+      LibUtils.peek(xfiletypelist[ft][name],'xfiletypelist[ft][name]',@pars["debug"])
+      xfiletypelist[ft][name]
+    end
+  end
+
   def xfilename_raw(args=Hash.new)
     args={
       :filetype=>xfiletype(args),
       :add_root=>true,
     }.merge(args)
+    ft=args[:filetype]
     LibUtils.peek(args,'in:args',@pars["debug"])
     #build complete filename
     out=String.new
     if args[:add_root]
-      unless xfiletypelist[args[:filetype]]["rootdir"].nil?
-        out+=xfiletypelist[args[:filetype]]["rootdir"]+"/" 
+      unless xelement("rootdir",ft).nil?
+        out+=xelement("rootdir",ft)+"/" 
       else
         out+=@pars["root"]+"/" 
       end
     end
-    LibUtils.peek(xfiletypelist[args[:filetype]],'xfiletypelist[args[:filetype]]',@pars["debug"])
-    out+=xfiletypelist[args[:filetype]]["subdir"]+'/' unless xfiletypelist[args[:filetype]]["subdir"].nil?
+    LibUtils.peek(xelement(nil,ft),'xelement(nil,ft)',@pars["debug"])
+    out+=xelement("subdir",ft)+'/' unless xelement("subdir",ft).nil?
     out+=@pars["subdir"]+'/' unless @pars["subdir"].nil?
     ["prefix","infix","suffix"].each do |k|
-      out+=xfiletypelist[args[:filetype]][k] unless xfiletypelist[args[:filetype]][k].nil?
+      out+=xelement(k,ft) unless xelement(k,ft).nil?
     end
     return out.gsub('.','\.')
   end
@@ -871,6 +889,11 @@ class GraceTree
   def xarc
     self.get_particle(:arc)
   end
+  # #this is far too general to work 
+  # def xversion
+  #   self.get_particle(:version)
+  # end
+
 
   def xfindstr
     unless @deppars.has_key?(:findstr)
@@ -905,7 +928,7 @@ class GraceTree
       from_particles.each do |k|
         LibUtils.peek(k,'iter:k',@pars["debug"] || debug_here)
         #get target filetype
-        ft=xfiletypelist[args[:filetype]][k]
+        ft=xelement(k)
         LibUtils.peek(ft,'iter:ft',@pars["debug"] || debug_here)
         #get particle name (just remove '_from')
         p=k.sub('_from','').to_sym
@@ -1024,7 +1047,11 @@ class GraceTree
   end
 
   def fsink(f)
-    f.sub(@pars["root"],xsink)
+    out=Hash.new
+    out[:file]=f.sub(@pars["root"],xsink)
+    out[:dir]=File.dirname(out[:file])
+    `#{flock} mkdir -p #{out[:dir]} 1>&2`.chomp unless File.directory?(out[:dir])
+    return out
   end
 
   def xls_scratch(args=Hash.new)
@@ -1040,22 +1067,19 @@ class GraceTree
     LibUtils.peek(xls.length,"xls.length",@pars["debug"] || debug_here)
     raise RuntimeError,"May need to copy #{xls.length} files, which is above the COPY_LIMIT (#{@pars["copylimit"]})." if xls.length>@pars["copylimit"]
     count=0
-    fsink=String.new
     out=Array.new
     xls.each do |f|
-      fsink=fsink(f)
-      dsink=File.dirname(fsink)
-      `#{flock} mkdir -p #{dsink} 1>&2`.chomp unless File.directory?(dsink)
+      sink=fsink(f)
       LibUtils.peek(f,    "iter:f",    @pars["debug"] || debug_here)
-      LibUtils.peek(fsink,"iter:fsink",@pars["debug"] || debug_here)
-      if File.size?(fsink).nil? || File.mtime(fsink) < File.mtime(f)
-        LibUtils.peek(File.mtime(f),    "iter:mtime(f)",    @pars["debug"] || debug_here)
-        LibUtils.peek(File.mtime(fsink),"iter:mtime(fsink)}",@pars["debug"] || debug_here) unless File.size?(fsink).nil?
-        o=`#{flock} rsync -aH --update --times --itemize-changes #{f} #{dsink} 1>&2`.chomp
-        raise RuntimeError,"Failed to copy file #{f} to #{dsink}:\n#{o}" unless $?.success?
+      LibUtils.peek(sink[:file],"iter:sink[:file]",@pars["debug"] || debug_here)
+      if File.size?(sink[:file]).nil? || File.mtime(sink[:file]) < File.mtime(f)
+        LibUtils.peek(File.mtime(f),          "iter:mtime(f)",           @pars["debug"] || debug_here)
+        LibUtils.peek(File.mtime(sink[:file]),"iter:mtime(sink[:file])}",@pars["debug"] || debug_here) unless File.size?(sink[:file]).nil?
+        o=`#{flock} rsync -aH --update --times --itemize-changes #{f} #{sink[:dir]} 1>&2`.chomp
+        raise RuntimeError,"Failed to copy file #{f} to #{sink[:dir]}:\n#{o}" unless $?.success?
         count+=1
       end
-      out.push(fsink)
+      out.push(sink[:file])
     end
     if count>0
       LibUtils.stderr("Copied #{count} file(s) from:\n#{xlsstr}\nto:\n#{xsink}")
@@ -1140,6 +1164,24 @@ class GraceTree
       out.push(linkname)
     end
     return out
+  end
+
+  def xdbstr
+     raise RuntimeError,"Cannot grab from DB unless the element dbgrab: is defined for file of type '#{xfiletype}'" if xelement("dbgrab").nil?
+     raise RuntimeError,"Cannot grab from DB unless the arguments -y, -m and -d are given" if @pars["year"]==DEFAULT[:year] || @pars["month"]==DEFAULT[:month] || @pars["day"]==DEFAULT[:day] 
+     raise RuntimeError,"Cannot grab from DB unless the argument -V is given" if @pars["version"]==DEFAULT[:version]
+     raise RuntimeError,"Cannot grab from DB unless the argument -s is given" if @pars["sat"]==DEFAULT[:sat]
+     s=LibUtils.utc2gps(Time.utc(2000+@pars["year"].to_i,@pars["month"].to_i,@pars["day"].to_i,0,0,0)).to_s
+     e=LibUtils.utc2gps(Time.utc(2000+@pars["year"].to_i,@pars["month"].to_i,@pars["day"].to_i,23,59,59)).to_s
+     ". ~byaa676/.python/bin/activate; #{flock} #{xelement("dbgrab")} -s #{s} -e #{e} -i #{@pars["sat"]} -v #{@pars["version"]} 1>&2"
+  end
+
+  def xdb
+    com=`#{xdbstr}`.chomp
+    raise RuntimeError,"Failed grab from DB to file #{f}:\n#{com}" unless $?.success?
+    sink=fsink(GraceTree.new(['-t',xfiletype,'-y',@pars["year"],'-m',@pars["month"],'-d',@pars["day"],'-s',@pars["sat"],'-x','lsstr','-V',@pars["version"]]).xlsstr)
+    com=`#{flock} mv --no-clobber ./#{File.basename(sink[:file])} #{sink[:dir]} 1>&2`.chomp
+    raise RuntimeError,"Failed to move grabbed data from DB in file #{File.basename(sink[:file])} to #{sink[:dir]}:\n#{com}" unless $?.success?
   end
 
 end
