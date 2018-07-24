@@ -928,7 +928,7 @@ class GraceTree
       from_particles.each do |k|
         LibUtils.peek(k,'iter:k',@pars["debug"] || debug_here)
         #get target filetype
-        ft=xelement(k)
+        ft=xelement(k,args[:filetype])
         LibUtils.peek(ft,'iter:ft',@pars["debug"] || debug_here)
         #get particle name (just remove '_from')
         p=k.sub('_from','').to_sym
@@ -1177,11 +1177,15 @@ class GraceTree
   end
 
   def xdb
-    com=`#{xdbstr}`.chomp
-    raise RuntimeError,"Failed grab from DB to file #{f}:\n#{com}" unless $?.success?
     sink=fsink(GraceTree.new(['-t',xfiletype,'-y',@pars["year"],'-m',@pars["month"],'-d',@pars["day"],'-s',@pars["sat"],'-x','lsstr','-V',@pars["version"]]).xlsstr)
-    com=`#{flock} mv --no-clobber ./#{File.basename(sink[:file])} #{sink[:dir]} 1>&2`.chomp
-    raise RuntimeError,"Failed to move grabbed data from DB in file #{File.basename(sink[:file])} to #{sink[:dir]}:\n#{com}" unless $?.success?
+    unless File.exist?(sink[:file])
+      file_tmp="./"+File.basename(sink[:file])
+      com=`#{xdbstr}`.chomp
+      raise RuntimeError,"Failed grab from DB to file #{f}:\n#{com}" unless $?.success?
+      com=`#{flock} mv #{file_tmp} #{sink[:dir]} 1>&2`.chomp
+      raise RuntimeError,"Failed to move grabbed data from DB in file #{file_tmp} to #{sink[:dir]}:\n#{com}" unless $?.success?
+    end
+    sink[:file]
   end
 
 end
