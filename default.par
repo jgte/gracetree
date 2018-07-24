@@ -201,17 +201,19 @@ filetypelist:
     infix: .20YEAR-MONTH-DAY_SAT_VERSION.
     suffix: acc.pre
     dbgrab: ~byaa676/grab_acc_l1b.py
+    #dbgrab: ~byab334/src/db_utils/extractor/grab_acc_l1b.py
   attpre:
     subdir: grace/YEAR/att/dat
     prefix: grace
     infix: .20YEAR-MONTH-DAY_SAT_VERSION.
     suffix: att.pre
+    dbgrab: ~byab334/src/db_utils/extractor/grab_att_l1b.py
   kbrpre:
     subdir: grace/YEAR/kbr/dat
     prefix: grace
     infix: .20YEAR-MONTH-DAY_X_VERSION.
     suffix: kbr.pre
-
+    dbgrab: ~byab334/src/db_utils/extractor/grab_kbr_l1b.py
 
 #---------------------------------------------------------------------------------
 #NOTICE: these files do not change significantly from day to day
