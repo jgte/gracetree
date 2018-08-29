@@ -4,126 +4,107 @@ execute: ls
 
 filetypelist:
   aakrep:
-    subdir: grace/YEAR/MONTH/conv_orb_l
+    subdir: grace/RELEASE/YEAR/MONTH/conv_orb*
     prefix: grc_aak_orb
-    infix: _20YEAR-MONTH-DAY_VERSION_RELEASE2leo.JOBID
+    infix: _20YEAR-MONTH-DAY_VERSION_RELEASE*2leo.JOBID
     suffix: .rep
   aakout:
-    subdir: grace/YEAR/MONTH/conv_orb_l
+    subdir: grace/RELEASE/YEAR/MONTH/conv_orb*
     prefix: grc_aak_orb
-    infix: _20YEAR-MONTH-DAY_VERSION_RELEASE2leo.JOBID
+    infix: _20YEAR-MONTH-DAY_VERSION_RELEASE*2leo.JOBID
     suffix: .out
   aakinp:
-    subdir: grace/YEAR/MONTH/conv_orb_l
+    subdir: grace/RELEASE/YEAR/MONTH/conv_orb*
     prefix: grc_aak_orb
-    infix: _20YEAR-MONTH-DAY_VERSION_RELEASE2leo.JOBID
+    infix: _20YEAR-MONTH-DAY_VERSION_RELEASE*2leo.JOBID
     suffix: .inp
   aakscript:
-    subdir: grace/YEAR/MONTH/conv_orb_l
+    subdir: grace/RELEASE/YEAR/MONTH/conv_orb*
     prefix: grc_aak_orb
-    infix: _20YEAR-MONTH-DAY_VERSION_RELEASE2leo.JOBID
+    infix: _20YEAR-MONTH-DAY_VERSION_RELEASE*2leo.JOBID
     suffix: .script
   acc+attrep:
-    subdir: grace/YEAR/MONTH/conv_orb_l
+    subdir: grace/RELEASE/YEAR/MONTH/conv_orb*
     prefix: grcSAT_acc+att_orb
     infix: _20YEAR-MONTH-DAY_VERSION_RELEASE.JOBID
     suffix: .rep
   acc+attout:
-    subdir: grace/YEAR/MONTH/conv_orb_l
+    subdir: grace/RELEASE/YEAR/MONTH/conv_orb*
     prefix: grcSAT_acc+att_orb
     infix: _20YEAR-MONTH-DAY_VERSION_RELEASE.JOBID
     suffix: .output
   acc+attinp:
-    subdir: grace/YEAR/MONTH/conv_orb_l
+    subdir: grace/RELEASE/YEAR/MONTH/conv_orb*
     prefix: grcSAT_acc+att_orb
     infix: _20YEAR-MONTH-DAY_VERSION_RELEASE.JOBID
     suffix: .inp
   acc+attscript:
-    subdir: grace/YEAR/MONTH/conv_orb_l
+    subdir: grace/RELEASE/YEAR/MONTH/conv_orb*
     prefix: grc_acc+att_orb
     infix: _20YEAR-MONTH-DAY_VERSION_RELEASE.JOBID
     suffix: .script
   acc+attlog:
-    subdir: grace/YEAR/MONTH/conv_orb_l
+    subdir: grace/RELEASE/YEAR/MONTH/conv_orb*
     prefix: grc_acc+att_orb
     infix: _20YEAR-MONTH-DAY_VERSION_RELEASE.JOBID
     suffix: .out
   gpsgrvrep:
-    subdir: grace/YEAR/MONTH/gps_reg_l
+    subdir: grace/RELEASE/YEAR/MONTH/gps_reg*
     prefix: grcSAT_gpsgrv
     infix: _20YEAR-MONTH-DAY_VERSION_RELEASE.JOBID
     suffix: .rep
   gpsgrvout:
-    subdir: grace/YEAR/MONTH/gps_reg_l
+    subdir: grace/RELEASE/YEAR/MONTH/gps_reg*
     prefix: grcSAT_gpsgrv
     infix: _20YEAR-MONTH-DAY_VERSION_RELEASE.JOBID
     suffix: .out
   gpsgrvinp:
-    subdir: grace/YEAR/MONTH/gps_reg_l
+    subdir: grace/RELEASE/YEAR/MONTH/gps_reg*
     prefix: grcSAT_gpsgrv
     infix: _20YEAR-MONTH-DAY_VERSION_RELEASE.JOBID
     suffix: .inp
   gpsgrvscript:
-    subdir: grace/YEAR/MONTH/gps_reg_l
+    subdir: grace/RELEASE/YEAR/MONTH/gps_reg*
 #    prefix: grc_grav
 #    infix: _20YEAR-MONTH-DAY_VERSION_RELEASE.JOBID
     suffix: .script
+  reforb+regscript:
+    subdir: grace/RELEASE/YEAR/MONTH/gps_reg*
+    prefix: grc_ref_orb+reg
+    infix: _20YEAR-MONTH-DAY_VERSION-RELEASE.JOBID
+    suffix: .script
   gpsgrvlog:
-    subdir: grace/YEAR/MONTH/gps_reg_l
+    subdir: grace/RELEASE/YEAR/MONTH/gps_reg*
     prefix: grc_grav
     infix: _20YEAR-MONTH-DAY_VERSION_RELEASE.JOBID
     suffix: .out
   sstgrvrep:
-    subdir: grace/YEAR/MONTH/kbr_reg_l
+    subdir: grace/RELEASE/YEAR/MONTH/kbr_reg*
     prefix: grc_sstgrv_rrate
     infix: _20YEAR-MONTH-DAY_VERSION_RELEASE.JOBID
     suffix: .rep
   sstgrvout:
-    subdir: grace/YEAR/MONTH/kbr_reg_l
+    subdir: grace/RELEASE/YEAR/MONTH/kbr_reg*
     prefix: grc_sstgrv_rrate
     infix: _20YEAR-MONTH-DAY_VERSION_RELEASE.JOBID
     suffix: .out
   sstgrvinp:
-    subdir: grace/YEAR/MONTH/kbr_reg_l
+    subdir: grace/RELEASE/YEAR/MONTH/kbr_reg*
     prefix: grc_sstgrv_rrate
     infix: _20YEAR-MONTH-DAY_VERSION_RELEASE.JOBID
     suffix: .inp   
-  jtk:
-    subdir: grace/YEAR/monitor_l
-    prefix: grcgrv_jtk
-    infix: _20YEAR-MONTH-DAY-RELEASE
-    suffix: .JOBID
-    jobid_from: input
-  jtkgrv:
-    subdir: grace/YEAR/monitor_l
-    prefix: grcgrv_jtk
-    infix: _20YEAR-MONTH-DAY-RELEASE
-    suffix: .JOBID
-  jtkacc:
-    subdir: grace/YEAR/monitor_l
-    prefix: grcacc_jtk
-    infix: _20YEAR-MONTH-DAY-RELEASE
-    suffix: .JOBID
-  jtkaak:
-    subdir: grace/YEAR/monitor_l
-    prefix: grcaak_jtk
-    infix: _20YEAR-MONTH-DAY-RELEASE
-    suffix: 2leo.JOBID
-    year_from: jtk
-    month_from: jtk
-    day_from: jtk
-  jtkgps:
-    subdir: grace/YEAR/monitor_l
-    prefix: grcgps_jtk
-    infix: _20YEAR-MONTH-DAY_RELEASE
-    suffix: .JOBID
-  mod:
-    subdir: grace/YEAR/MONTH/gps_orb_l
-    prefix: grcSAT_gps_orb
-    infix: _20YEAR-MONTH-DAY_
-    suffix: VERSION_RELEASE.JOBID.acc
+  kbrpreNHres:
+    subdir: grace/RELEASE/YEAR/MONTH/kbr_chk*
+    prefix: grace
+    infix: .20YEAR-MONTH-DAY_X_VERSION.JOBID.
+    suffix: kbr.preNH+res
+  kbrpreNHres_edited:
+    subdir: grace/RELEASE/YEAR/MONTH/kbr_chk*
+    prefix: grace
+    infix: .20YEAR-MONTH-DAY_X_VERSION.JOBID.
+    suffix: kbr.preNH+res_edited
   kbrres:
-    subdir: grace/YEAR/MONTH/kbr_chk_l
+    subdir: grace/RELEASE/YEAR/MONTH/kbr_chk*
     prefix: grace
     infix: .20YEAR-MONTH-DAY_X_VERSION.JOBID
     suffix: .kbr.preNH+res
@@ -131,10 +112,59 @@ filetypelist:
     month_from: jtk
     day_from: jtk
   kbrres_edited:
-    subdir: grace/YEAR/MONTH/kbr_chk_l
+    subdir: grace/RELEASE/YEAR/MONTH/kbr_chk*
     prefix: grace
     infix: .20YEAR-MONTH-DAY_X_VERSION.JOBID
     suffix: .kbr.preNH+res_edited
+  jtk:
+    subdir: grace/RELEASE/YEAR/monitor*
+    prefix: grcgrv_jtk
+    infix: _20YEAR-MONTH-DAY-RELEASE
+    suffix: .JOBID
+    jobid_from: input
+  jtkgrv:
+    subdir: grace/RELEASE/YEAR/monitor*
+    prefix: grcgrv_jtk
+    infix: _20YEAR-MONTH-DAY-RELEASE
+    suffix: .JOBID
+  jtkacc:
+    subdir: grace/RELEASE/YEAR/monitor*
+    prefix: grcacc_jtk
+    infix: _20YEAR-MONTH-DAY-RELEASE
+    suffix: .JOBID
+  jtkaak:
+    subdir: grace/RELEASE/YEAR/monitor*
+    prefix: grcaak_jtk
+    infix: _20YEAR-MONTH-DAY-RELEASE
+    suffix: 2leo.JOBID
+    year_from: jtk
+    month_from: jtk
+    day_from: jtk
+  jtkgps:
+    subdir: grace/RELEASE/YEAR/monitor*
+    prefix: grcgps_jtk
+    infix: _20YEAR-MONTH-DAY_RELEASE
+    suffix: .JOBID
+  mod:
+    subdir: grace/RELEASE/YEAR/MONTH/gps_orb*
+    prefix: grcSAT_gps_orb
+    infix: _20YEAR-MONTH-DAY_
+    suffix: VERSION_RELEASE.JOBID.acc
+  grcgpsorb:
+    subdir: grace/RELEASE/YEAR/MONTH/gps_orb*
+    prefix: grcSAT_gps_orb
+    infix: _20YEAR-MONTH-DAY_VERSION_RELEASE.JOBID.
+    suffix: j2.stt.asc
+  obsdat:
+    subdir: grace/RELEASE/YEAR/MONTH/ddedit*
+    prefix: daySAT_pd
+    infix: _20YEAR-MONTH-DAY_VERSION_RELEASE.JOBID.
+    suffix: ddrn 
+  obsdat_hr:
+    subdir: grace/RELEASE/YEAR/MONTH/ddedit*
+    prefix: daySAT_pn
+    infix: _20YEAR-MONTH-DAY_VERSION_RELEASE.JOBID.
+    suffix: ddrn 
   ddr:
     subdir: grace/html/YEARDOY/img
     prefix: grcSAT
@@ -165,55 +195,31 @@ filetypelist:
     prefix: gpsSAT
     infix: _YEAR-MONTH-DAY_VERSION_RELEASE.JOBID.
     suffix: reg
-  grcgpsorb:
-    subdir: grace/YEAR/MONTH/gps_orb_l
-    prefix: grcSAT_gps_orb
-    infix: _20YEAR-MONTH-DAY_VERSION_RELEASE.JOBID.
-    suffix: j2.stt.asc
-  obsdat:
-    subdir: grace/YEAR/MONTH/ddedit_l
-    prefix: daySAT_pd
-    infix: _20YEAR-MONTH-DAY_VERSION_RELEASE.JOBID.
-    suffix: ddrn 
-  obsdat_hr:
-    subdir: grace/YEAR/MONTH/ddedit_l
-    prefix: daySAT_pn
-    infix: _20YEAR-MONTH-DAY_VERSION_RELEASE.JOBID.
-    suffix: ddrn 
-  kbrpreNH:
-    subdir: grace/YEAR/kbr/dat
-    prefix: grace
-    infix: .20YEAR-MONTH-DAY_X_VERSION.
-    suffix: kbr.preNH
-  kbrpreNHres:
-    subdir: grace/YEAR/MONTH/kbr_chk_l
-    prefix: grace
-    infix: .20YEAR-MONTH-DAY_X_VERSION.JOBID.
-    suffix: kbr.preNH+res
-  kbrpreNHres_edited:
-    subdir: grace/YEAR/MONTH/kbr_chk_l
-    prefix: grace
-    infix: .20YEAR-MONTH-DAY_X_VERSION.JOBID.
-    suffix: kbr.preNH+res_edited
   accpre:
-    subdir: grace/YEAR/acc/dat
+    subdir: grace/RELEASE/YEAR/acc/dat
     prefix: grace
     infix: .20YEAR-MONTH-DAY_SAT_VERSION.
     suffix: acc.pre
-    dbgrab: ~byaa676/grab_acc_l1b.py
-    #dbgrab: ~byab334/src/db_utils/extractor/grab_acc_l1b.py
+    dbgrab: ~byaa676/utils/grab_acc_l1b.py
+    #dbgrab: ~byab334/bin/grab_acc_l1b.py
   attpre:
-    subdir: grace/YEAR/att/dat
+    subdir: grace/RELEASE/YEAR/att/dat
     prefix: grace
     infix: .20YEAR-MONTH-DAY_SAT_VERSION.
     suffix: att.pre
-    dbgrab: ~byab334/src/db_utils/extractor/grab_att_l1b.py
+    #dbgrab: ~byab334/bin/grab_att_l1b.py
+    dbgrab: ~byaa676/utils/grab_att_l1b.py
   kbrpre:
-    subdir: grace/YEAR/kbr/dat
+    subdir: grace/RELEASE/YEAR/kbr/dat
     prefix: grace
     infix: .20YEAR-MONTH-DAY_X_VERSION.
     suffix: kbr.pre
-    dbgrab: ~byab334/src/db_utils/extractor/grab_kbr_l1b.py
+    dbgrab: ~byab334/bin/grab_kbr_l1b.py
+  kbrpreNH:
+    subdir: grace/RELEASE/YEAR/kbr/dat
+    prefix: grace
+    infix: .20YEAR-MONTH-DAY_X_VERSION.
+    suffix: kbr.preNH
 
 #---------------------------------------------------------------------------------
 #NOTICE: these files do not change significantly from day to day
@@ -244,11 +250,11 @@ filetypelist:
     infix: VERSION.
     suffix: sta
   reduced_netw:
-    subdir: grace/YEAR/reduced_network
+    subdir: grace/RELEASE/YEAR/reduced_network
     prefix: grc_reduced_network
     infix: _20YEAR-MONTH_RELEASE
   reduced_netw_default:
-    subdir: grace/YEAR/reduced_network
+    subdir: grace/RELEASE/YEAR/reduced_network
     prefix: grc_reduced_network
     infix: _default
   sst:
