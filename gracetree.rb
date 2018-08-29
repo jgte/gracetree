@@ -88,6 +88,7 @@ class GraceTree
   attr_accessor :parfile, :pars, :pars_input, :deppars, :rsdb, :adb
 
   PARFILE=File.dirname(__FILE__)+"/default.par"
+  raise RuntimeError,"Cannot find parfile #{PARFILE}." unless File.exist?(PARFILE)
   PLACEHOLDER={
     :year   => 'YEAR',
     :month  => 'MONTH',
@@ -131,7 +132,7 @@ class GraceTree
   PARTICLE_LIST=[
     "year","month","day","jobid","sat","arc","release","reldate","doy","version"
   ]
-
+  SCRATCH=(ENV["SCRATCH"].nil? ? "/tmp" : ENV["SCRATCH"])
 
   def initialize(argv)
     #default par file
@@ -141,7 +142,7 @@ class GraceTree
       "execute"             => nil,
       "execute-option"      => nil,
       "root"                => nil,
-      "sink"                => ENV["SCRATCH"]+"/gracetree",
+      "sink"                => SCRATCH+"/gracetree",
       "year"                => DEFAULT[:year],
       "month"               => DEFAULT[:month],
       "day"                 => DEFAULT[:day],
@@ -162,7 +163,7 @@ class GraceTree
       "debug"               => false,
       "hardlinkdir"         => '.',
       "hardlinkname"        => nil,
-      "flock"               => ENV["SCRATCH"]+"/.lock/main",
+      "flock"               => SCRATCH+"/.lock/main",
       "breakifempty"        => false,
     }
     #get input arguments and replace default parameters
@@ -178,7 +179,7 @@ class GraceTree
   end
 
   def self.valid_commands
-    GraceTree.instance_methods(false).sort.grep(/^x/).map{|i| i.sub(/^x/,'')}
+    GraceTree.instance_methods(false).sort.grep(/^x/).map{|i| i.to_s.sub(/^x/,'')}
   end
 
   def options_default_str(option,extra='')
@@ -228,7 +229,7 @@ class GraceTree
         @pars["root"]=File.expand_path(String.new(i.to_s))
       end
       opts.on("-S","--sink SINK","Copy files to SINK "+
-        self.options_default_str("sink",", i.e. $SCRATCH/gracetree")+'.') do |i|
+        self.options_default_str("sink",", i.e. #{SCRATCH}/gracetree")+'.') do |i|
         @pars["sink"]=File.expand_path(String.new(i.to_s))
       end
       opts.on("-y","--year YEAR","Replace the placeholder '#{PLACEHOLDER[:year]}' in subdir: or infix: with this value "+
@@ -319,7 +320,7 @@ class GraceTree
         self.options_default_str("copy")+'.') do |i|
         @pars["copy"]=i
       end
-      opts.on("-L","--copy-limit COPY_LIMIT","Do not copy more than COPY_LIMIT files to $SCRATCH "+
+      opts.on("-L","--copy-limit COPY_LIMIT","Do not copy more than COPY_LIMIT files to #{SCRATCH} "+
         self.options_default_str("copylimit")+'.') do |i|
         @pars["copylimit"]=i.to_i
       end
@@ -352,8 +353,12 @@ class GraceTree
         exit
       end
       unless File.directory?(@pars["sink"])
-        Dir.mkdir(@pars["sink"])
-        LibUtils.stderr("NOTICE: created directory #{@pars["sink"]}")
+        begin
+          Dir.mkdir(@pars["sink"])
+          LibUtils.stderr("NOTICE: created directory #{@pars["sink"]}")
+        rescue Errno::ENOENT
+          LibUtils.stderr("NOTICE: cannot create directory #{@pars["sink"]}")
+        end        
       end
     end
     #parse it
