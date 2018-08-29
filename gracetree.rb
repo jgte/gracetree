@@ -1054,8 +1054,12 @@ class GraceTree
     return out
   end
 
-  def xls_scratch(args=Hash.new)
-    LibUtils.peek(args,'in:args',@pars["debug"])
+  def xfsink
+    out=fsink(xfilename)
+    out[:file]
+  end
+
+  def xls_scratch
     xls.each.map{ |f| fsink(f) }
   end
 
@@ -1181,7 +1185,7 @@ class GraceTree
     unless File.exist?(sink[:file])
       file_tmp="./"+File.basename(sink[:file])
       com=`#{xdbstr}`.chomp
-      raise RuntimeError,"Failed grab from DB to file #{f}:\n#{com}" unless $?.success?
+      raise RuntimeError,"Failed grab from DB to file #{file_tmp}:\n#{com}" unless $?.success?
       com=`#{flock} mv #{file_tmp} #{sink[:dir]} 1>&2`.chomp
       raise RuntimeError,"Failed to move grabbed data from DB in file #{file_tmp} to #{sink[:dir]}:\n#{com}" unless $?.success?
     end
