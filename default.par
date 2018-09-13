@@ -294,8 +294,10 @@ filetypelist:
 #NOTICE: these files depend on the <released_solution>, so -D must be given (and preferably NOT -y and -m)
 #---------------------------------------------------------------------------------
   estimdir:
-    subdir: grace/aux
     #rootdir: /home1/00767/byaa676
+    #subdir: grace/aux
+    rootdir: /Users/teixeira/data/csr/corral-tacc
+    subdir: aux
     prefix: EstimDirs_
     suffix: RELEASE
   #this is needed in order to provide the wildcarded version of the <released_solution> methods
