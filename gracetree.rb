@@ -1052,20 +1052,23 @@ class GraceTree
   end
 
   def fsink(f)
+    LibUtils.peek(f,"in:f",@pars["debug"])
     out=Hash.new
     out[:file]=f.sub(@pars["root"],xsink)
+    LibUtils.peek(out[:file],"out[:file]",@pars["debug"])
     out[:dir]=File.dirname(out[:file])
+    LibUtils.peek(out[:dir],"out[:dir]",@pars["debug"])
     `#{flock} mkdir -p #{out[:dir]} 1>&2`.chomp unless File.directory?(out[:dir])
+    LibUtils.peek(out,"out",@pars["debug"])
     return out
   end
 
   def xfsink
-    out=fsink(xfilename)
-    out[:file]
+    fsink(xfilename)[:file]
   end
 
   def xls_scratch
-    xls.each.map{ |f| fsink(f) }
+    xls.each.map{ |f| fsink(f)[:file] }
   end
 
   def xcopy
