@@ -369,6 +369,11 @@ filetypelist:
     prefix: krr
     infix: _YEAR-MONTH-DAY_VERSION_RELEASE.JOBID.
     suffix: resid
+  resfil:
+    subdir: grace/YEAR/MONTH/kbr_chk_l
+    prefix: kbrres.acc+att
+    infix: .20YEAR-MONTH-DAY_VERSION_RELEASE.JOBID.
+    suffix: RESFIL_orig
   latlon:
 #1:  Time
 #2:  Res      : Postfits (y-A*x_est)
