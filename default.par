@@ -379,7 +379,7 @@ filetypelist:
 #2:  Res      : Postfits (y-A*x_est)
 #3:  Obs      : observation vector (y)
 #4:  Combined : sum of the next 3
-#5:  local    : signal explained by the local parameters
+#5:  Local    : signal explained by the local parameters
 #6:  Common   : signal explained by the common parameters (includes non-geo globals)
 #7:  Global   : signal explained by the global parameters (geo only)
 #8:  lat
