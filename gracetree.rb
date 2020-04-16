@@ -90,47 +90,56 @@ class GraceTree
   PARFILE=File.dirname(__FILE__)+"/default.par"
   raise RuntimeError,"Cannot find parfile #{PARFILE}." unless File.exist?(PARFILE)
   PLACEHOLDER={
-    :year   => 'YEAR',
-    :month  => 'MONTH',
-    :day    => 'DAY',
-    :doy    => 'DOY',
-    :release=> 'RELEASE',
-    :reldate=> 'RELDATE',
-    :jobid  => 'JOBID',
-    :arc    => 'ARC',
-    :sat    => 'SAT',
-    :version=> 'VERSION',
+    :year    => 'YEAR',
+    :month   => 'MONTH',
+    :day     => 'DAY',
+    :doy     => 'DOY',
+    :release => 'RELEASE',  #RL06DD/RL06UD
+    :relshort=> 'RELSHORT', #RL06/RL06
+    :relalt  => 'RELALT',   #RL06/RL06U
+    :reldate => 'RELDATE',
+    :jobid   => 'JOBID',
+    :arc     => 'ARC',
+    :sat     => 'SAT',
+    :version => 'VERSION',
+    :time    => 'TIME',
   }
   PLACEHOLDER_REGEXP={
-    :year   => '\d\d',
-    :month  => '\d\d',
-    :day    => '\d\d',
-    :doy    => '\d\d\d',
-    :release=> 'RL\d\d[a-z]?',
-    :reldate=> 'RL\d\d[a-z]?_\d\d-\d\d',
-    :jobid  => '\d+',
-    :arc    => '\d+',
-    :sat    => '[AB]',
-    :version=> '*',
-  }
+    :year    => '\d\d',
+    :month   => '\d\d',
+    :day     => '\d\d',
+    :doy     => '\d\d\d',
+    :release => 'RL\d\d[a-zA-Z]?',
+    :relshort=> 'RL\d\d',
+    :relalt  => 'RL\d\d*',
+    :reldate => 'RL\d\d[a-zA-Z]?_\d\d-\d\d',
+    :jobid   => '\d+',
+    :arc     => '\d+',
+    :sat     => '[AB]',
+    :version => '*',
+    :time    => '*',
+   } 
 
   DEFAULT={
-    :year  => '[0-9][0-9]',
-    :month => '[0-9][0-9]',
-    :day   => '[0-9][0-9]',
-    :doy   => '[0-9][0-9][0-9]',
-    :release=>'RL05', #this cannot be a wildcard, since the name of the database depends on it
-    :reldate=>'*',
-    :jobid => '*',
-    :arc   => '*',
-    :sat   => '[AB]',
-    :version=> '*',
+    :year    => '[0-9][0-9]',
+    :month   => '[0-9][0-9]',
+    :day     => '[0-9][0-9]',
+    :doy     => '[0-9][0-9][0-9]',
+    :release => 'RL05', #this cannot be a wildcard, since the name of the database depends on it
+    :relshort=> 'RL*',
+    :relalt  => 'RL0[5-9]*',
+    :reldate => '*',
+    :jobid   => '*',
+    :arc     => '*',
+    :sat     => '[AB]',
+    :version => '*',
+    :time    => '*',
   }
   DATABASE={
     :rs => "released_solutions.database",
   }
   PARTICLE_LIST=[
-    "year","month","day","jobid","sat","arc","release","reldate","doy","version"
+    "year","month","day","jobid","sat","arc","release","relshort","relalt","reldate","doy","version","time"
   ]
   SCRATCH=(ENV["SCRATCH"].nil? ? "/tmp" : ENV["SCRATCH"])
 
@@ -148,12 +157,15 @@ class GraceTree
       "day"                 => DEFAULT[:day],
       "doy"                 => DEFAULT[:doy],
       "release"             => DEFAULT[:release],
+      "relshort"            => DEFAULT[:relshort],
+      "relalt"              => DEFAULT[:relalt],
       "reldate"             => DEFAULT[:reldate],
       "jobid"               => DEFAULT[:jobid],
       "arc"                 => DEFAULT[:arc],
       "sat"                 => DEFAULT[:sat],
       "version"             => DEFAULT[:version],
-      "subdir"           => nil,
+      "time"                => DEFAULT[:time],
+      "subdir"              => nil,
       "filetype"            => nil,
       "pattern"             => nil,
       "clean-grep"          => false,
@@ -282,11 +294,14 @@ class GraceTree
       end
       opts.on("-r","--release RELEASE","Replace the placeholder '#{PLACEHOLDER[:release]}' in :prefix, infix: or suffix: elements with this value "+
         self.options_default_str("release")+'.') do |i|
-        @pars["release"]=String.new(i.to_s)
+        @pars["release"]=String.new(i.to_s).sub(/RL06U[A-Z]*/,'RL06UD')
       end
       opts.on("-D","--reldate RELEASE_DATE","Replace the placeholder '#{PLACEHOLDER[:reldate]}' in :prefix, infix: or suffix: elements with this value, e.g. RL05_17-01 "+
         self.options_default_str("reldate")+'.') do |i|
         @pars["reldate"]=String.new(i.to_s)
+        #update year and month (don't update RELEASE, keep it independent, maybe we will need that flexibility)
+        @pars['year']=solution_year
+        @pars['month']=solution_month
       end
       opts.on("-V","--version VERSION","Replace the placeholder '#{PLACEHOLDER[:version]}' in :prefix, infix: or suffix: elements with this value, e.g. RL61_GPSRL62 "+
         self.options_default_str("version")+'.') do |i|
@@ -535,6 +550,7 @@ class GraceTree
       "reldate",
       "sat",
       "arc",
+      "time",
     ])
   end
 
@@ -643,17 +659,99 @@ class GraceTree
     #replace placeholders with requested filename parts
     PARTICLE_LIST.map{|p| p.to_sym}.each do |k|
       LibUtils.peek(k,'iter:k',@pars["debug"] || debug_here)
-      unless particles[k.to_s].nil?
-        case k
-        when :release
-          out=out.gsub(PLACEHOLDER[k],particles[k.to_s].to_s.sub(/[UD]D/,'')) 
-        else
-          out=out.gsub(PLACEHOLDER[k],particles[k.to_s].to_s) 
-        end
+      next if particles[k.to_s].nil?
+      #set usual value
+      particle_value=particles[k.to_s].to_s
+      LibUtils.peek(particle_value,'iter:particle_value',@pars["debug"] || debug_here)
+      #handle special cases
+      case k
+      when :relshort; particle_value=resolve_relshort(particles)
+      when :relalt;   particle_value=resolve_relalt(  particles)
+      when :reldate;  particle_value=resolve_reldate( particles)
+      when :release;  particle_value=resolve_release( particles)
       end
+      LibUtils.peek(particle_value,'iter:particle_value (#k resolved)',@pars["debug"] || debug_here)
+      out=out.gsub(PLACEHOLDER[k],particle_value) 
       LibUtils.peek(out,'iter:out',@pars["debug"] || debug_here)
     end
     return out
+  end
+
+  # --- release 2 everything ---
+  def release2relalt(release)
+    case release.to_s
+    when "RL06DD"; return "RL06"
+    when "RL06UD"; return "RL06U"
+    else;          return release.to_s
+    end
+  end
+  def release2relshort(release)
+    return release.to_s[0..3]
+  end
+  def release2reldate(release,particles=xparticles)
+    particles['year'].nil?  ? year='*'  : year=particles['year']
+    particles['month'].nil? ? month='*' : month=particles['month']
+    return release.to_s+'_'+year+'-'+month
+  end
+  def resolve_release(particles=xparticles)
+    if isdefaultparticle('release',particles)
+      if    ! isdefaultparticle('relalt', particles); return relalt2release( particles['relalt' ])
+      elsif ! isdefaultparticle('reldate',particles); return reldate2release(particles['reldate'])
+      end
+    end
+    return particles['release']
+  end
+  # --- relalt 2 everything ---
+  def relalt2release(relalt)
+    case relalt.to_s
+    when "RL06" ; return "RL06DD"
+    when "RL06U"; return "RL06UD"
+    else;         return relatl
+    end
+  end
+  def relalt2relshort(relalt)
+    return reldate.to_s[0..3]
+  end
+  def relalt2reldate(relalt,particles=xparticles)
+    particles['year'].nil?  ? year='*'  : year=particles['year']
+    particles['month'].nil? ? month='*' : month=particles['month']
+    return relalt2release(realt)+'_'+year+'-'+month
+  end
+  def resolve_relalt(particles=xparticles)
+    if isdefaultparticle('relalt',particles)
+      if    ! isdefaultparticle('release',particles); return release2relalt(particles['release'])
+      elsif ! isdefaultparticle('reldate',particles); return reldate2relalt(particles['reldate'])
+      end
+    end
+    return particles['relalt']
+  end
+  # --- reldate 2 everything ---
+  def reldate2release(reldate)
+    return reldate.split('_')[0]
+  end
+  def reldate2relshort(reldate)
+    return reldate.to_s[0..3]
+  end
+  def reldate2relalt(reldate)
+    return release2relalt(reldate2release(reldate))
+  end
+  def resolve_reldate(particles=xparticles)
+    if isdefaultparticle('reldate',particles)
+      if    ! isdefaultparticle('release',particles); return release2reldate(particles['release'],particles)
+      elsif ! isdefaultparticle('relalt', particles); return  relalt2reldate(particles['relalt' ],particles)
+      end
+    end
+    return particles['reldate']
+  end
+  # --- relshort resolving ---
+  def resolve_relshort(particles=xparticles)
+    if isdefaultparticle('relshort',particles)
+      if    ! isdefaultparticle('release',particles); return release2relshort(particles['release'])
+      elsif ! isdefaultparticle('relalt', particles); return  relalt2relshort(particles['relalt' ])
+      elsif ! isdefaultparticle('reldate',particles); return reldate2relshort(particles['reldate'])
+      end
+    end
+    return particles['relshort']
   end
 
   def xfilename_quick
@@ -671,6 +769,10 @@ class GraceTree
       end
     end
     @deppars[:particles]
+  end
+
+  def isdefaultparticle(particle_name,particles=xparticles)
+    return particles[particle_name.to_s]==DEFAULT[particle_name.to_sym]
   end
 
   def parse_krrreg(filename)
@@ -760,7 +862,7 @@ class GraceTree
 
   #if @pars['reldate'] has the standard RL05_YY-MM, nothing happens
   # otherwise retrieve the year and month from the non-standard RL05b_YY-MM
-  def solution_date(d="15")
+  def solution_date(d=nil)
     raise RuntimeError,"Need valid YEAR and MONTH or RELEASE_DATE to retrieve the released solution." if invalid_solution_date
     #transalate year (reldate is by default RL05_YY-MM, but some solutions from 6/2013 to 6/2014 are RL05b_YY-MM)
     if @pars['reldate']==DEFAULT[:reldate]
@@ -775,7 +877,7 @@ class GraceTree
       m=solution_month
     end
     #over-write the defaul day value if it is set
-    d=@pars['day'] unless @pars['day']==DEFAULT[:day]
+    d=@pars['day'] if d.nil?
     return y,m,d
   end
 
@@ -808,8 +910,14 @@ class GraceTree
   end
 
   def xreleased_solution_literal
+    soldir=[]
     #the released_solution dir should have the 'solution_60' directory in it
-    `find #{@pars["root"]}/#{xreleased_solution} -type d -name solution_60`.chomp.split('/solution_60')[0].sub(@pars["root"]+'/','')
+    ["solution_60","solution"].each do |d|
+      soldir=`find #{@pars["root"]}/#{xreleased_solution} -type d -name #{d}`.chomp.split('/'+d)
+      break unless soldir.empty?
+    end
+    raise RuntimeError,"Could not find any valid subdir in #{@pars["root"]}/#{xreleased_solution}" if soldir.empty?
+    soldir[0].sub(@pars["root"]+'/','')
   end
 
 
@@ -892,13 +1000,15 @@ class GraceTree
     self.get_particle(:sat)
   end
   def xarc
-    self.get_particle(:arc)
+    LibUtils.natural_sort(self.get_particle(:arc))
   end
   # #this is far too general to work 
   # def xversion
   #   self.get_particle(:version)
   # end
-
+  def xtime
+    self.get_particle(:time)
+  end
 
   def xfindstr
     unless @deppars.has_key?(:findstr)
@@ -1132,7 +1242,7 @@ class GraceTree
   def xawkstr
     raise RuntimeError,"Need PATTERN." if pars["pattern"].nil?
     file_list=xls_scratch.join(' ')
-    raise RuntimeError,"Found no files with name #{xfilename}." if file_list.empty?
+    raise RuntimeError,"Found no files with name '#{xfilename}'." if file_list.empty?
     "awk '#{pars["pattern"].gsub("'",'"')}' #{file_list}"
   end
 
