@@ -118,7 +118,7 @@ class GraceTree
     :sat     => '[AB]',
     :version => '*',
     :time    => '*',
-   } 
+   }
 
   DEFAULT={
     :year    => '[0-9][0-9]',
@@ -373,7 +373,7 @@ class GraceTree
           LibUtils.stderr("NOTICE: created directory #{@pars["sink"]}")
         rescue Errno::ENOENT
           LibUtils.stderr("NOTICE: cannot create directory #{@pars["sink"]}")
-        end        
+        end
       end
     end
     #parse it
@@ -524,7 +524,7 @@ class GraceTree
   def debugallfiletypes(methodlist)
     out=Hash.new
       xfiletypelist.each_key do |k|
-        out[k]=GraceTree.new(['-t',k.to_s]+self.debug_common_args).xdebug(methodlist)
+        out[k]=GraceTree.new(['-p',@parfile,'-t',k.to_s]+self.debug_common_args).xdebug(methodlist)
       end
     return out
   end
@@ -569,6 +569,14 @@ class GraceTree
 
   def xparfile
     YAML.dump(@pars)
+  end
+
+  def xparfilename
+    File.basename(@parfile,File.extname(@parfile))
+  end
+
+  def xdbfile
+    @pars["sink"]+'/'+DATABASE[:rs]+'.'+xparfilename+'.'+@pars["release"]
   end
 
   def xfiletypelist
@@ -616,9 +624,9 @@ class GraceTree
     out=String.new
     if args[:add_root]
       unless xelement("rootdir",ft).nil?
-        out+=xelement("rootdir",ft)+"/" 
+        out+=xelement("rootdir",ft)+"/"
       else
-        out+=@pars["root"]+"/" 
+        out+=@pars["root"]+"/"
       end
     end
     LibUtils.peek(xelement(nil,ft),'xelement(nil,ft)',@pars["debug"])
@@ -671,7 +679,7 @@ class GraceTree
       when :release;  particle_value=resolve_release( particles)
       end
       LibUtils.peek(particle_value,'iter:particle_value (#k resolved)',@pars["debug"] || debug_here)
-      out=out.gsub(PLACEHOLDER[k],particle_value) 
+      out=out.gsub(PLACEHOLDER[k],particle_value)
       LibUtils.peek(out,'iter:out',@pars["debug"] || debug_here)
     end
     return out
@@ -787,7 +795,7 @@ class GraceTree
     [parse_krrreg(File.open(xls({:filetype => "krrreg"})[0]).to_a.last)]
   end
 
-  def released_solutions_io(op,dbfile=@pars["sink"]+'/'+DATABASE[:rs]+'.'+@pars["release"])
+  def released_solutions_io(op,dbfile=xdbfile)
     debug_here=false
     LibUtils.peek(dbfile,'dbfile',@pars["debug"]||debug_here)
     case op
@@ -797,7 +805,8 @@ class GraceTree
       File.open(dbfile,'w') {|f| f.write(@rsdb.to_yaml)}
     when :build
       #get file with solution list
-      estimdirfile=GraceTree.new(['-t','estimdir','-r',@pars["release"]]).xfind
+      estimdirfile=GraceTree.new(['-p',@parfile,'-t','estimdir','-r',@pars["release"]]).xfind
+      LibUtils.peek(estimdirfile,'estimdirfile',@pars["debug"]||debug_here)
       raise RuntimeError,"Expecting the EstimDirs file to be one, not #{estimdirfile.length}." unless estimdirfile.length==1
       #build released solutions database
       @rsdb=Hash.new
@@ -1002,7 +1011,7 @@ class GraceTree
   def xarc
     LibUtils.natural_sort(self.get_particle(:arc))
   end
-  # #this is far too general to work 
+  # #this is far too general to work
   # def xversion
   #   self.get_particle(:version)
   # end
@@ -1275,7 +1284,7 @@ class GraceTree
         unless out.length==0
           #delete previously linked file ('out' for sure already had length zero)
           File.delete(linkname)
-          raise RuntimeError,"Cannot handle multiple link targets if HARDLINK_NAME is given" 
+          raise RuntimeError,"Cannot handle multiple link targets if HARDLINK_NAME is given"
         end
       end
       LibUtils.peek(linkname,'linkname',@pars["debug"])
@@ -1290,7 +1299,7 @@ class GraceTree
 
   def xdbstr
      raise RuntimeError,"Cannot grab from DB unless the element dbgrab: is defined for file of type '#{xfiletype}'" if xelement("dbgrab").nil?
-     raise RuntimeError,"Cannot grab from DB unless the arguments -y, -m and -d are given" if @pars["year"]==DEFAULT[:year] || @pars["month"]==DEFAULT[:month] || @pars["day"]==DEFAULT[:day] 
+     raise RuntimeError,"Cannot grab from DB unless the arguments -y, -m and -d are given" if @pars["year"]==DEFAULT[:year] || @pars["month"]==DEFAULT[:month] || @pars["day"]==DEFAULT[:day]
      raise RuntimeError,"Cannot grab from DB unless the argument -V is given" if @pars["version"]==DEFAULT[:version]
      raise RuntimeError,"Cannot grab from DB unless the argument -s is given" if @pars["sat"]==DEFAULT[:sat]
      s=LibUtils.utc2gps(Time.utc(2000+@pars["year"].to_i,@pars["month"].to_i,@pars["day"].to_i,0,0,0)).to_s
@@ -1299,7 +1308,7 @@ class GraceTree
   end
 
   def xdb
-    sink=fsink(GraceTree.new(['-t',xfiletype,'-y',@pars["year"],'-m',@pars["month"],'-d',@pars["day"],'-s',@pars["sat"],'-x','lsstr','-V',@pars["version"]]).xlsstr)
+    sink=fsink(GraceTree.new(['-p',@parfile,'-t',xfiletype,'-y',@pars["year"],'-m',@pars["month"],'-d',@pars["day"],'-s',@pars["sat"],'-x','lsstr','-V',@pars["version"]]).xlsstr)
     unless File.exist?(sink[:file])
       file_tmp="./"+File.basename(sink[:file])
       com=`#{xdbstr}`.chomp

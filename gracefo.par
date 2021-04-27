@@ -1,0 +1,613 @@
+---
+root: /corral-tacc/utexas/csr
+execute: ls
+
+filetypelist:
+  aakrep:
+    subdir: gracefo/RELSHORT/YEAR/MONTH/conv_orb*
+    prefix: grc_aak_orb
+    infix: _20YEAR-MONTH-DAY_VERSION_RELSHORT*2leo.JOBID
+    suffix: .rep
+  aakout:
+    subdir: gracefo/RELSHORT/YEAR/MONTH/conv_orb*
+    prefix: grc_aak_orb
+    infix: _20YEAR-MONTH-DAY_VERSION_RELSHORT*2leo.JOBID
+    suffix: .out
+  aakinp:
+    subdir: gracefo/RELSHORT/YEAR/MONTH/conv_orb*
+    prefix: grc_aak_orb
+    infix: _20YEAR-MONTH-DAY_VERSION_RELSHORT*2leo.JOBID
+    suffix: .inp
+  aakscript:
+    subdir: gracefo/RELSHORT/YEAR/MONTH/conv_orb*
+    prefix: grc_aak_orb
+    infix: _20YEAR-MONTH-DAY_VERSION_RELSHORT*2leo.JOBID
+    suffix: .script
+  aaklog:
+    subdir: gracefo/RELSHORT/YEAR/MONTH/conv_orb*
+    prefix: grc_aak_orb
+    infix: _20YEAR-MONTH-DAY_VERSION_RELSHORT*2leo.JOBID
+    suffix: .out
+  acc+attrep:
+    subdir: gracefo/RELSHORT/YEAR/MONTH/conv_orb*
+    prefix: grcSAT_acc+att_orb
+    infix: _20YEAR-MONTH-DAY_VERSION_TIMERELALT.JOBID
+    suffix: .rep
+  acc+attout:
+    subdir: gracefo/RELSHORT/YEAR/MONTH/conv_orb*
+    prefix: grcSAT_acc+att_orb
+    infix: _20YEAR-MONTH-DAY_VERSION_TIMERELALT.JOBID
+    suffix: .output
+  acc+attinp:
+    subdir: gracefo/RELSHORT/YEAR/MONTH/conv_orb*
+    prefix: grcSAT_acc+att_orb
+    infix: _20YEAR-MONTH-DAY_VERSION_TIMERELALT.JOBID
+    suffix: .inp
+  acc+attscript:
+    subdir: gracefo/RELSHORT/YEAR/MONTH/conv_orb*
+    prefix: grc_acc+att_orb
+    infix: _20YEAR-MONTH-DAY_VERSION_TIMERELALT.JOBID
+    suffix: .script
+  acc+attlog:
+    subdir: gracefo/RELSHORT/YEAR/MONTH/conv_orb*
+    prefix: grc_acc+att_orb
+    infix: _20YEAR-MONTH-DAY_VERSION_TIMERELALT.JOBID
+    suffix: .out
+  gpsgrvrep:
+    subdir: gracefo/RELSHORT/YEAR/MONTH/gps_reg*
+    prefix: grcSAT_gpsgrv
+    infix: _20YEAR-MONTH-DAY_VERSION_TIMERELALT.JOBID
+    suffix: .rep
+  gpsgrvout:
+    subdir: gracefo/RELSHORT/YEAR/MONTH/gps_reg*
+    prefix: grcSAT_gpsgrv
+    infix: _20YEAR-MONTH-DAY_VERSION_TIMERELALT.JOBID
+    suffix: .out
+  gpsgrvinp: #TODO: possibly many entries in these definitions should look like this:
+    subdir: gracefo/RELSHORT/YEAR/MONTH/gps_reg*
+    prefix: grcSAT_gpsgrv
+    infix: _20YEAR-MONTH-DAY_VERSION_TIMERELALT.JOBID
+    suffix: .inp
+  gpsgrvscript:
+    subdir: gracefo/RELSHORT/YEAR/MONTH/gps_reg*
+    prefix: grc_grav
+    infix: _20YEAR-MONTH-DAY_VERSION_TIMERELALT.JOBID
+    suffix: .script
+  gpsgrvlog:
+    subdir: gracefo/RELSHORT/YEAR/MONTH/gps_reg*
+    prefix: grcSAT_gpsgrv
+    infix: _20YEAR-MONTH-DAY_VERSION_TIMERELALT.JOBID
+    suffix: .out
+  reforb+regscript:
+    subdir: gracefo/RELSHORT/YEAR/MONTH/gps_reg*
+    prefix: grc_ref_orb+reg
+    infix: _20YEAR-MONTH-DAY_VERSION-RELEASE.JOBID
+    suffix: .script
+  reforb+regrep:
+    subdir: gracefo/RELSHORT/YEAR/MONTH/gps_reg*
+    prefix: grcSAT_ref_orb+reg
+    infix: _20YEAR-MONTH-DAY_VERSION_TIMERELEASE.JOBID
+    suffix: .rep
+  reforb+regout:
+    subdir: gracefo/RELSHORT/YEAR/MONTH/gps_reg*
+    prefix: grcSAT_ref_orb+reg
+    infix: _20YEAR-MONTH-DAY_VERSION_TIMERELEASE.JOBID
+    suffix: .out
+  reforb+reginp: #TODO: possibly many entries in these definitions should look like this:
+    subdir: gracefo/RELSHORT/YEAR/MONTH/gps_reg*
+    prefix: grcSAT_ref_orb+reg
+    infix: _20YEAR-MONTH-DAY_VERSION_TIMERELEASE.JOBID
+    suffix: .inp
+  reforb+regscript:
+    subdir: gracefo/RELSHORT/YEAR/MONTH/gps_reg*
+    prefix: grc_ref_orb+reg
+    infix: _20YEAR-MONTH-DAY_VERSION_TIMERELEASE.JOBID
+    suffix: .script
+  reforb+reglog:
+    subdir: gracefo/RELSHORT/YEAR/MONTH/gps_reg*
+    prefix: grc_ref_orb+reg
+    infix: _20YEAR-MONTH-DAY_VERSION_TIMERELEASE.JOBID
+    suffix: .out
+  sstgrvrep:
+    subdir: gracefo/RELSHORT/YEAR/MONTH/kbr_reg*
+    prefix: grc_sstgrv_rrate
+    infix: _20YEAR-MONTH-DAY_VERSION[-_]RELALT.JOBID
+    suffix: .rep
+  sstgrvout:
+    subdir: gracefo/RELSHORT/YEAR/MONTH/kbr_reg*
+    prefix: grc_sstgrv_rrate
+    infix: _20YEAR-MONTH-DAY_VERSION[-_]RELALT.JOBID
+    suffix: .out
+  sstgrvinp:
+    subdir: gracefo/RELSHORT/YEAR/MONTH/kbr_reg*
+    prefix: grc_sstgrv_rrate
+    infix: _20YEAR-MONTH-DAY_VERSION_TIMERELALT.JOBID
+    suffix: .inp
+  sstgrvlog:
+    subdir: gracefo/RELSHORT/YEAR/MONTH/kbr_reg*
+    prefix: grc_sstgrv_rrate
+    infix: _20YEAR-MONTH-DAY_VERSION_TIMERELALT.JOBID
+    suffix: .out
+  kbrpreNHres:
+    subdir: gracefo/RELSHORT/YEAR/MONTH/kbr_chk*
+    prefix: grace
+    infix: .20YEAR-MONTH-DAY_X_VERSION.JOBID.
+    suffix: kbr.preNH+res
+  kbrpreNHres_edited:
+    subdir: gracefo/RELSHORT/YEAR/MONTH/kbr_chk*
+    prefix: grace
+    infix: .20YEAR-MONTH-DAY_X_VERSION.JOBID.
+    suffix: kbr.preNH+res_edited
+  kbrres:
+    subdir: gracefo/RELSHORT/YEAR/MONTH/kbr_chk*
+    prefix: grace
+    infix: .20YEAR-MONTH-DAY_X_VERSION.JOBID
+    suffix: .kbr.preNH+res
+    year_from: jtk
+    month_from: jtk
+    day_from: jtk
+  kbrres_edited:
+    subdir: gracefo/RELSHORT/YEAR/MONTH/kbr_chk*
+    prefix: grace
+    infix: .20YEAR-MONTH-DAY_X_VERSION.JOBID
+    suffix: .kbr.preNH+res_edited
+  jtk:
+    subdir: gracefo/RELSHORT/YEAR/monitor*
+    prefix: grcgrv_jtk
+    infix: _20YEAR-MONTH-DAY_TIMERELALT
+    suffix: .JOBID
+    jobid_from: input
+  jtkgrv:
+    subdir: gracefo/RELSHORT/YEAR/monitor*
+    prefix: grcgrv_jtk
+    infix: _20YEAR-MONTH-DAY_TIMERELALT
+    suffix: .JOBID
+  jtkacc:
+    subdir: gracefo/RELSHORT/YEAR/monitor*
+    prefix: grcacc_jtk
+    infix: _20YEAR-MONTH-DAY_TIMERELALT
+    suffix: .JOBID
+  jtkaak:
+    subdir: gracefo/RELSHORT/YEAR/monitor*
+    prefix: grcaak_jtk
+    infix: _20YEAR-MONTH-DAY_TIMERELALT
+    suffix: -2leo.JOBID
+    year_from: jtk
+    month_from: jtk
+    day_from: jtk
+  jtkgps:
+    subdir: gracefo/RELSHORT/YEAR/monitor*
+    prefix: grcgps_jtk
+    infix: _20YEAR-MONTH-DAY_TIMERELEASE
+    suffix: .JOBID
+  mod:
+    subdir: gracefo/RELSHORT/YEAR/MONTH/gps_orb*
+    prefix: grcSAT_gps_orb
+    infix: _20YEAR-MONTH-DAY_VERSION[-_]RELEASE.JOBID.
+    suffix: acc
+  grcgpsorb:
+    subdir: gracefo/RELSHORT/YEAR/MONTH/gps_orb*
+    prefix: grcSAT_gps_orb
+    infix: _20YEAR-MONTH-DAY_VERSION[-_]RELEASE.JOBID.
+    suffix: j2.stt.asc
+  obsdat:
+    subdir: gracefo/RELSHORT/YEAR/MONTH/ddedit*
+    prefix: daySAT_pd
+    infix: _20YEAR-MONTH-DAY_VERSION[-_]RELEASE.JOBID.
+    suffix: ddrn
+  obsdat_hr:
+    subdir: gracefo/RELSHORT/YEAR/MONTH/ddedit*
+    prefix: daySAT_pn
+    infix: _20YEAR-MONTH-DAY_VERSION[-_]RELEASE.JOBID.
+    suffix: ddrn
+  ddr:
+    subdir: gracefo/html/YEARDOY/img
+    prefix: grcSAT
+    infix: _acc+att_orb_20YEAR-MONTH-DAY_VERSION[-_]RELEASE.JOBID.
+    suffix: ddr.png
+  kbr_filt_rrate:
+    subdir: gracefo/html/YEARDOY/img
+    prefix: grc.kbrres
+    infix: .acc+att.20YEAR-MONTH-DAY_VERSION[-_]RELEASE.JOBID.
+    suffix: kbr_filt_rrate.png
+  kbrran:
+    subdir: gracefo/html/YEARDOY/img
+    prefix: grc.kbrres
+    infix: .acc+att.20YEAR-MONTH-DAY_VERSION[-_]RELEASE.JOBID.
+    suffix: kbrran.png
+  kbrrra:
+    subdir: gracefo/html/YEARDOY/img
+    prefix: grc.kbrres
+    infix: .acc+att.20YEAR-MONTH-DAY_VERSION[-_]RELEASE.JOBID.
+    suffix: kbrrra.png
+  krrregres:
+    subdir: REG_RELEASE/regres_20YEAR_MONTH
+    prefix: krr
+    infix: _YEAR-MONTH-DAY_VERSION_TIMERELEASE.JOBID.
+    suffix: reg
+  gpsregres:
+    subdir: REG_RELEASE/regres_20YEAR_MONTH
+    prefix: gpsSAT
+    infix: _YEAR-MONTH-DAY_VERSION_TIMERELEASE.JOBID.
+    suffix: reg
+  gpsphaseregres:
+    subdir: REG_RELEASE/regres_20YEAR_MONTH
+    prefix: gpsSATphaseUD
+    infix: _YEAR-MONTH-DAY_VERSION_TIMERELEASE.JOBID.
+    suffix: reg
+  gpsrangeregres:
+    subdir: REG_RELEASE/regres_20YEAR_MONTH
+    prefix: gpsSATrangeUD
+    infix: _YEAR-MONTH-DAY_VERSION_TIMERELEASE.JOBID.
+    suffix: reg
+  accpre:
+    subdir: gracefo/RELSHORT/YEAR/acc/dat
+    prefix: grace
+    infix: .20YEAR-MONTH-DAY_SAT_VERSION.
+    suffix: acc.pre
+    dbgrab: ~byaa676/lib/grab_acc_l1b.py
+    #dbgrab: ~byab334/bin/grab_acc_l1b.py
+  attpre:
+    subdir: gracefo/RELSHORT/YEAR/att/dat
+    prefix: grace
+    infix: .20YEAR-MONTH-DAY_SAT_VERSION.
+    suffix: att.pre
+    #dbgrab: ~byab334/bin/grab_att_l1b.py
+    dbgrab: ~byaa676/lib/grab_att_l1b.py
+  kbrpre:
+    subdir: gracefo/RELSHORT/YEAR/kbr/dat
+    prefix: grace
+    infix: .20YEAR-MONTH-DAY_X_VERSION.
+    suffix: kbr.pre
+    dbgrab: ~byab334/bin/grab_kbr_l1b.py
+  kbrpreNH:
+    subdir: gracefo/RELSHORT/YEAR/kbr/dat
+    prefix: grace
+    infix: .20YEAR-MONTH-DAY_X_VERSION.
+    suffix: kbr.preNH
+
+#---------------------------------------------------------------------------------
+#NOTICE: these files do not change significantly from day to day
+#---------------------------------------------------------------------------------
+
+  satinfo:
+    subdir: gracefo/input
+    prefix: satellite.
+    suffix: VERSION
+  gpslist:
+    subdir: gps/YEAR/orb/VERSION
+    prefix: gps
+    infix: _VERSION.
+    suffix: YEAR
+  itrf:
+    subdir: gracefo/input
+    prefix: IG
+    infix: VERSION.
+    suffix: snx
+  igs:
+    subdir: gracefo/input
+    prefix: igs
+    infix: VERSION.
+    suffix: snx
+  ppgrace:
+    subdir: gracefo/gpspp/aux
+    prefix: ppgrace
+    infix: VERSION.
+    suffix: sta
+  reduced_netw:
+    subdir: gracefo/RELEASE/YEAR/reduced_network
+    prefix: grc_reduced_network
+    infix: _20YEAR-MONTH_RELEASE
+  reduced_netw_default:
+    subdir: gracefo/RELEASE/YEAR/reduced_network
+    prefix: grc_reduced_network
+    infix: _default
+  sst:
+    subdir: byab343/utopia/
+    prefix: JGM
+    infix: VERSION.
+    suffix: SST_T
+  yawnmn:
+    subdir: gps/yaw
+    prefix: nominal
+    infix: _yaw_rates
+    suffix: VERSION
+  yawbia:
+    subdir: gps/yaw
+    prefix: yaw
+    infix: _bias_table
+    suffix: VERSION
+  gpspcv:
+    subdir: gracefo/input
+    prefix: GPSPCV
+    infix: .VERSION
+  leoapc:
+    subdir: gracefo/input
+    prefix: grace-SAT
+    infix: .VERSION.
+    suffix: pcv
+  antcor:
+    subdir: gracefo/input
+    prefix: ANTCOR
+    infix: .VERSION
+  bs:
+    subdir: gracefo/input
+    prefix: bsSAT
+    infix: VERSION
+
+#---------------------------------------------------------------------------------
+#NOTICE: these files depend on the <released_solution>, so -D must be given (and preferably NOT -y and -m)
+#---------------------------------------------------------------------------------
+  estimdir:
+    rootdir: /corral-tacc/utexas/csr
+    subdir: gracefo/aux/
+    prefix: EstimDirs_
+    infix: gracefo_
+    suffix: RELEASE
+  #this is needed in order to provide the wildcarded version of the <released_solution> methods
+  released_solution:
+    subdir: "byaa705/gracefo/grav/RELEASE_YEAR-MONTH/[a-z]/iter"
+  Rcommon:
+    subdir: <released_solution>/solution
+    prefix: R.common.
+    infix: arcARC.to.arcARC.JOBID
+    suffix: .estim
+  Rglobal:
+    subdir: <released_solution>/solution
+    prefix: R.
+    infix: global
+    suffix: .JOBID.estim
+  Rlocal:
+    subdir: <released_solution>/solution
+    prefix: R.
+    infix: local
+    suffix: .JOBID.estim
+  input:
+    subdir: <released_solution>/arc_R
+    prefix: INPUT_
+    infix: YEAR-MONTH-DAY_VERSION_TIMERELALT
+    suffix: .JOBID.*
+  arcR:
+    subdir: <released_solution>/arc_R
+    prefix: arc_
+    infix: YEAR-MONTH-DAY_VERSION_TIMERELALT
+    suffix: .JOBID.*.R
+  krrreg:
+    subdir: <released_solution>/..
+    prefix: krr
+    suffix: .reg.files
+  krrobs:
+    subdir: <released_solution>/..
+    prefix: krr
+    suffix: .obs.files
+  gpsreg:
+    subdir: <released_solution>/..
+    prefix: gps
+    infix: SAT
+    suffix: .reg.files
+  pts:
+    subdir: <released_solution>/PTS
+    prefix: PTS_RELDATE_
+    infix: 20YEAR-MONTH-DAY_R.common.arcARC.to.arcARC.JOBID
+    suffix: .estim
+    year_from: jtk
+    month_from: jtk
+    day_from: jtk
+  outpts:
+    subdir: <released_solution>/PTS
+    prefix: out.PTS_RELDATE_
+    infix: 20YEAR-MONTH-DAY_R.local.arcARC.file1.JOBID
+    suffix: .estim
+  job_aesop:
+    subdir: <released_solution>/..
+    prefix: job_Aesop*.
+    suffix: JOBID
+  aesopinp60:
+    subdir: <released_solution>/solution_60
+    prefix: INPUT.
+    suffix: JOBID
+  aesopinp120:
+    subdir: <released_solution>/solution_120
+    prefix: INPUT.
+    suffix: JOBID
+  aesopinp:
+    subdir: <released_solution>/solution
+    prefix: INPUT.
+    suffix: JOBID
+  aesopout:
+    subdir: <released_solution>/../
+    prefix: Aesop*.out.
+    suffix: JOBID
+  job_post:
+    subdir: <released_solution>/..
+    prefix: job_Post*.
+    suffix: JOBID
+  resid:
+    subdir: <released_solution>/postfit
+    prefix: krr
+    infix: _YEAR-MONTH-DAY_VERSION[-_]RELALT.JOBID.
+    suffix: resid
+  gpsAresid:
+    subdir: <released_solution>/postfit
+    prefix: gpsA
+    infix: _YEAR-MONTH-DAY_VERSION[-_]RELALT.JOBID.
+    suffix: resid
+  gpsBresid:
+    subdir: <released_solution>/postfit
+    prefix: gpsB
+    infix: _YEAR-MONTH-DAY_VERSION[-_]RELALT.JOBID.
+    suffix: resid
+  resfil:
+    subdir: gracefo/RELSHORT/YEAR/MONTH/kbr_chk*
+    prefix: kbrres.acc+att
+    infix: .20YEAR-MONTH-DAY_VERSION[-_]RELALT.JOBID.
+    suffix: RESFIL_orig
+  autoedit:
+    subdir: gracefo/RELSHORT/YEAR/MONTH/kbr_chk*
+    prefix: kbrres.aak
+    infix: .20YEAR-MONTH-DAY_VERSION[-_]RELALT-2leo.JOBID.
+    suffix: RESFIL_autoedit
+  manedit:
+    subdir: gracefo/RELSHORT/YEAR/MONTH/kbr_chk*
+    prefix: kbrres.aak
+    infix: .20YEAR-MONTH-DAY_VERSION[-_]RELALT-2leo.JOBID.
+    suffix: RESFIL_manedit
+  AllEditedPoints:
+    subdir: <released_solution>/../editing
+    prefix: kbrres.aak
+    infix: .20YEAR-MONTH-DAY_VERSION[-_]RELSHORT-2leo.JOBID.
+    suffix: AllEditedPoints
+  ManEditedPoints:
+    subdir: <released_solution>/../editing
+    prefix: kbrres.aak
+    infix: .20YEAR-MONTH-DAY_VERSION[-_]RELSHORT-2leo.JOBID.
+    suffix: ManEditedPoints
+  latlon:
+#1:  Time
+#2:  Res      : Postfits (y-A*x_est)
+#3:  Obs      : observation vector (y)
+#4:  Combined : sum of the next 3
+#5:  Local    : signal explained by the local parameters
+#6:  Common   : signal explained by the common parameters (includes non-geo globals)
+#7:  Global   : signal explained by the global parameters (geo only)
+#8:  lat
+#9:  lon
+#10: altitude
+#11: shadow
+#12: something_i_dont_remember
+#13: ascending/descending track
+#14-19: same as previous 6 columns for GRACE B
+    subdir: <released_solution>/latlon_postfit
+    prefix: krr
+    infix: _YEAR-MONTH-DAY_VERSION[-_]RELSHORT.JOBID.
+    suffix: resid.latlon
+  krrpostfitpng:
+    subdir: <released_solution>/postfit
+    prefix: KRR
+    infix: _postfit.ARC.
+    suffix: png
+  gpspostfitpng:
+    subdir: <released_solution>/postfit
+    prefix: GPSSAT
+    infix: _postfit.ARC.
+    suffix: png
+  gpsphasepostfitpng:
+    subdir: <released_solution>/postfit
+    prefix: gpsSATphase
+    infix: _postfit.ARC.
+    suffix: png
+  gpsrangepostfitpng:
+    subdir: <released_solution>/postfit
+    prefix: gpsSATrange
+    infix: _postfit.ARC.
+    suffix: png
+  geo60:
+    subdir: <released_solution_literal>/solution_60
+    prefix: GEO
+    infix: .
+    suffix: JOBID
+  optwt:
+    subdir: <released_solution_literal>/solution
+    prefix: optwt
+    infix: .
+    suffix: JOBID
+  sigdir:
+    subdir: <released_solution_literal>
+    infix: SIG
+  ptsdir:
+    subdir: <released_solution_literal>
+    infix: PTS
+  sigdir2step:
+    subdir: <released_solution_literal>
+    infix: SIG_2step
+  ptsdir2step:
+    subdir: <released_solution_literal>
+    infix: PTS_2step
+  arcRdir:
+    subdir: <released_solution_literal>
+    infix: arc_R
+  2stepdir:
+    subdir: <released_solution_literal>
+    prefix: solution
+    infix: _2step_
+    suffix: '*'
+#---------------------------------------------------------------------------------
+#NOTICE: these are methods, that means they are called with -x, e.g. gracetree.rb -y 8 -m 5 -x jtkaakdate
+#        always use double quotes to keep an argument from being split (single quotes are not supported)
+#---------------------------------------------------------------------------------
+methodlist:
+
+  jtkgpsdoy:   -t jtkgps     -x awk -g "{print $2}"
+  jtkgpsdate:  -t jtkgps     -x awk -g "{print $3}"
+  jtkgpsmjd:   -t jtkgps     -x awk -g "{print $4}"
+  jtkgpsOOID:  -t jtkgps     -x awk -g "{print $5}" #same as JOBID
+
+  jtkaakdoy:   -t jtkaak     -x awk -g "{print $2}"
+  jtkaakdate:  -t jtkaak     -x awk -g "{print $3}"
+  jtkaakmjd:   -t jtkaak     -x awk -g "{print $4}"
+  jtkaakOOID:  -t jtkaak     -x awk -g "{print $5}"
+  jtkaakEDID:  -t jtkaak     -x awk -g "{print $6}" #same as JOBID
+
+  jtkaccdoy:   -t jtkacc     -x awk -g "{print $2}"
+  jtkaccdate:  -t jtkacc     -x awk -g "{print $3}"
+  jtkaccmjd:   -t jtkacc     -x awk -g "{print $4}"
+  jtkaccOOID:  -t jtkacc     -x awk -g "{print $5} {nextfile}" #some jtkacc files have duplicate lines
+  jtkaccACID:  -t jtkacc     -x awk -g "{print $6} {nextfile}" #same as JOBID
+
+  jtkgrvdoy:      -t jtkgrv  -x awk -g "{print $2}"
+  jtkgrvdate:     -t jtkgrv  -x awk -g "{print $3}"
+  jtkgrvmjd:      -t jtkgrv  -x awk -g "{print $4}"
+  jtkgrvACID:     -t jtkgrv  -x awk -g "{print $5}"
+  jtkgrvGRID:     -t jtkgrv  -x awk -g "{print $6}" #same as JOBID
+  jtkgrvstart:    -t jtkgrv  -x awk -g "{print $12}"
+  jtkgrvduration: -t jtkgrv  -x awk -g "{print $13}"
+
+  jtkdoy:      -t jtk        -x awk -g "{print $2}"
+  jtkdate:     -t jtk        -x awk -g "{print $3}"
+  jtkmjd:      -t jtk        -x awk -g "{print $4}"
+  jtkACID:     -t jtk        -x awk -g "{print $5}"
+  jtkGRID:     -t jtk        -x awk -g "{print $6}" #same as JOBID (reported in the gps/krrreg)
+  jtkstart:    -t jtk        -x awk -g "{print $12}"
+  jtkduration: -t jtk        -x awk -g "{print $13}"
+
+  #NOTICE: this shows these IDs for the whole month, irrespective of -d
+  krrregGRID:  -t krrreg -x awk -g "BEGIN {FS='.'}; {print $2}"
+  krrregdate:  -t krrreg -x awk -g "BEGIN {FS='[_-.]'}; {print sprintf('20%02d-%02d-%02d',$11,$12,$13)}"
+  krrregargs:  -t krrreg -x awk -g "BEGIN {FS='[_-.]'}; {print sprintf('-D RL05_%02d-%02d -d %02d',$11,$12,$13)}"
+  krrobsEDID:  -t krrobs -x awk -g "BEGIN {FS='.'}; {print $3}"
+  krrobsdate:  -t krrobs -x awk -g "BEGIN {FS='[._]'}; {print $4}"
+  krrobsyear:  -t krrobs -x awk -g "BEGIN {FS='[.\-]'}; {print $2}"
+  krrobsargs:  -t krrobs -x awk -g "BEGIN {FS='[_-.]'};
+                                        /corral-tacc\/utexas\/csr/ {print '-y',$13-2000,'-m',$14,'-d',$15;};
+                                        /corral\/csr\/gracefo/       {print '-y',$11-2000,'-m',$12,'-d',$13};"
+
+  #NOTICE: most if not all all of this stuff only works on RL05
+  RL05date:    -t pts -x year+month+day
+  job_aesopJAID:  -t job_aesop -x jobid
+  arclist:     -t pts        -x arc
+  arcdate:                   -x jtkdate+jtkmjd+arclist
+  arctimeline:               -x arclist+jtkdate+jtkmjd+jtkstart+jtkduration
+  dateconsistency:           -x inputdate+aakdate+accattdate+jtkdate
+  ptsarcstart: -t pts -x awk -g "{print $7}"
+  ptsparam:    -t pts -x awk -g "{print $1, $2}"
+  ptsyear:     -t pts -x year
+  ptsmonth:    -t pts -x month
+  ptsday:      -t pts -x day
+  ptsdate:            -x ptsyear+ptsmonth+ptsday
+  #NOTICE: this fails when one arc has been removed from the regres step
+  accattargs:  -t jtk -x year+jtkdoy+jtkstart+jtkduration+krrobsEDID
+  regresargs:  -t jtk -x year+jtkdoy+jtkACID+krrobsEDID -r RL05
+
+  inputdate:    -t input      -x year+month+day
+  Rcommonarcs:  -t Rcommon    -x arc
+  accattdate:   -t acc+attrep -x year+month+day
+  accattepoch1: -t acc+attrep -x awk -g "/EPOCH1/ {print $2$3$4}"
+  accattepoch2: -t acc+attrep -x awk -g "/EPOCH2/ {print $2$3$4}"
+  accattepoch:                -x accattepoch1+accattepoch2
+  aakdate:      -t aakrep     -x year+month+day
+  aakepoch1:    -t aakrep     -x awk -g "/EPOCH1/ {print $2$3$4}"
+  aakepoch2:    -t aakrep     -x awk -g "/EPOCH2/ {print $2$3$4}"
+  aakepoch:                   -x aakepoch1+aakepoch2
+
+  nobs: -t resid -x nl
+
